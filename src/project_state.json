@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Build \"Phoenix Predictions\": a responsive FlutterFlow + Firebase web app for professional football predictions with a dark analytics theme, defined Firestore schema, core pages (Home, Match Analysis, VIP, Tickets, Results, Profile, Admin Panel), subscription-based VIP gating, payment upgrades, notifications, and an admin dashboard for managing content and results.",
+  "architectural_notes": [
+    "Tech stack: FlutterFlow frontend + Firebase (Firestore) backend; must be testable on web and mobile browsers.",
+    "Firestore schema includes Users, Matches, Analysis, Tickets, Results, and optional Notifications with fields as specified.",
+    "Access control: role-based protected Admin Panel; VIP gating based on Users.subscription_type; conditional visibility for tickets/odds.",
+    "Payments: integrate PayFast + Flutterwave to upgrade subscription_type.",
+    "UI spec: Dark Analyst Theme colors (#0B0B0B background, #D4AF37 highlights, #1A1A1A cards, #EAEAEA text) and fonts (Montserrat/Poppins headings; Inter/Roboto body).",
+    "Admin Panel visibility depends on an admin flag/role on the signed-in user record; ensure the correct user is marked as admin and the UI gating checks that field consistently."
+  ],
+  "known_issues": [
+    "User reports latest UI/theme updates did not apply: app still shows the old design; requires ensuring the full dark-gold theme pass is actually reflected across screens exactly as reference.",
+    "Admin dashboard/Admin Panel not visible for the user who expects admin access; likely missing/incorrect admin role flag on the user record or mismatched gating condition."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-implement-the-phoenix-predictions-dark-analytics-theme-across-the-app-ui-black-0b0b0b-background-gold-d4af37-highlights-deep-charcoal-1a1a1a-cards-soft-white-eaeaea-text-use-montserrat-poppins-style-headings-and-inter-roboto-style-body-fonts-ensure-a-clean-professional-dashboard-analytics-layout-and-responsive-design-for-mobile-desktop",
+      "title": "Implement the Phoenix Predictions dark analytics theme across the app UI: Black (#0B0B0B) background, Gold (#D4AF37) highlights, Deep Charcoal (#1A1A1A) cards, Soft White (#EAEAEA) text; use Montserrat/Poppins-style headings and Inter/Roboto-style body fonts; ensure a clean professional dashboard/analytics layout and responsive design for mobile + desktop.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-authentication-using-internet-identity-and-associate-the-authenticated-principal-with-a-user-record-name-email-subscription-type-join-date",
+      "title": "Implement authentication using Internet Identity and associate the authenticated principal with a User record (name, email, subscription_type, join_date).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-required-navigation-and-screens-in-this-exact-order-ia-home-match-analysis-vip-tickets-results-profile-admin-panel-with-usable-navigation-on-both-mobile-and-desktop",
+      "title": "Implement the required navigation and screens in this exact order/IA: Home → Match Analysis → VIP → Tickets → Results → Profile → Admin Panel, with usable navigation on both mobile and desktop.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-home-screen-show-today-s-matches-and-each-match-s-confidence-level-provide-links-into-the-selected-match-analysis-page-and-to-the-vip-section-load-data-by-joining-matches-analysis",
+      "title": "Home Screen: show Today’s Matches and each match’s Confidence Level; provide links into the selected Match Analysis page and to the VIP section; load data by joining Matches + Analysis.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-match-analysis-page-display-form-head-to-head-goal-stats-tactical-insight-and-a-confidence-badge-include-a-vip-only-section-that-conditionally-reveals-ticket-odds-content-when-the-user-s-subscription-type-allows-it-data-sourced-from-matches-analysis-and-tickets-when-unlocked",
+      "title": "Match Analysis Page: display Form, Head-to-Head, Goal Stats, Tactical Insight, and a Confidence badge; include a VIP-only section that conditionally reveals Ticket + Odds content when the user’s subscription_type allows it; data sourced from Matches + Analysis (and Tickets when unlocked).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-vip-section-implement-views-for-safe-builder-3-odds-value-accumulator-5-odds-and-odds-train-multi-day-20-25-matches-driven-by-tickets-matches-analysis-include-an-odds-train-progress-bar-showing-completed-vs-remaining-legs",
+      "title": "VIP Section: implement views for Safe Builder (3 odds), Value Accumulator (5 odds), and Odds Train (multi-day, 20–25 matches) driven by Tickets + Matches + Analysis; include an Odds Train progress bar showing completed vs remaining legs.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-tickets-page-display-ticket-details-ticket-type-odds-selections-status-and-selection-drill-down-to-match-analysis-enforce-the-same-subscription-based-gating-conditional-visibility-rules-for-odds-and-ticket-content-as-specified",
+      "title": "Tickets Page: display ticket details (ticket_type, odds, selections, status) and selection drill-down to Match Analysis; enforce the same subscription-based gating/conditional visibility rules for odds and ticket content as specified.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-results-dashboard-show-win-rate-last-30-days-performance-wins-losses-and-streaks-compute-these-metrics-from-results-tickets-support-filtering-overview-suitable-for-an-analytics-dashboard",
+      "title": "Results Dashboard: show win rate %, last 30 days performance, wins/losses, and streaks; compute these metrics from Results + Tickets; support filtering/overview suitable for an analytics dashboard.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-profile-page-show-user-info-and-subscription-status-provide-an-upgrade-button-that-initiates-a-payment-flow-for-payfast-and-flutterwave-and-upon-confirmed-success-updates-the-user-s-subscription-type-free-basic-premium",
+      "title": "Profile Page: show user info and subscription status; provide an upgrade button that initiates a payment flow for PayFast and Flutterwave and, upon confirmed success, updates the user’s subscription_type (Free / Basic / Premium).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-vip-gating-rules-enforce-access-and-conditional-visibility-based-on-users-subscription-type-for-vip-sections-ticket-content-and-odds-support-tiers-free-basic-vip-premium-vip-as-described-by-the-user-map-to-stored-values-free-basic-premium-while-keeping-user-facing-labels-consistent",
+      "title": "VIP gating rules: enforce access and conditional visibility based on Users.subscription_type for VIP sections, ticket content, and odds; support tiers Free, Basic VIP, Premium VIP as described by the user (map to stored values Free/Basic/Premium while keeping user-facing labels consistent).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-confidence-badges-render-confidence-level-with-these-colors-very-high-gold-high-green-moderate-orange-low-red-consistently-across-home-and-match-analysis-and-anywhere-else-confidence-is-displayed",
+      "title": "Confidence badges: render confidence_level with these colors: Very High → Gold, High → Green, Moderate → Orange, Low → Red, consistently across Home and Match Analysis (and anywhere else confidence is displayed).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-admin-panel-hidden-role-based-add-protected-admin-only-pages-actions-to-add-match-add-analysis-build-ticket-update-results-and-track-accuracy-these-actions-must-write-to-matches-analysis-tickets-results-and-be-inaccessible-to-non-admin-users",
+      "title": "Admin Panel (hidden/role-based): add protected admin-only pages/actions to Add Match, Add Analysis, Build Ticket, Update Results, and Track Accuracy; these actions must write to Matches, Analysis, Tickets, Results and be inaccessible to non-admin users.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-notifications-system-implement-an-optional-notifications-feature-for-ticket-releases-results-and-updates-using-a-notifications-collection-in-backend-storage-provide-a-ui-to-view-notifications-per-user",
+      "title": "Notifications system: implement an optional Notifications feature for ticket releases, results, and updates using a Notifications collection in backend storage; provide a UI to view notifications per user.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-global-phoenix-predictions-styling-so-the-app-visually-matches-the-uploaded-reference-images-exactly-including-deep-black-background-subtle-textured-gradient-backdrop-gold-accent-lines-deep-charcoal-cards-with-gold-borders-glow-and-consistent-typography-hierarchy-across-all-pages-home-match-analysis-vip-tickets-results-profile-admin",
+      "title": "Update the global Phoenix Predictions styling so the app visually matches the uploaded reference images exactly, including: deep black background, subtle textured/gradient backdrop, gold accent lines, deep charcoal cards with gold borders/glow, and consistent typography hierarchy across all pages (Home, Match Analysis, VIP, Tickets, Results, Profile, Admin).",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-resolve-the-theme-not-appearing-to-update-by-eliminating-conflicting-unused-global-css-tokens-and-ensuring-there-is-a-single-source-of-truth-for-css-variables-used-by-tailwind-theme-tokens-background-foreground-card-primary-etc-so-that-the-deployed-ui-reliably-reflects-the-phoenix-dark-gold-theme",
+      "title": "Resolve the theme not appearing to update by eliminating conflicting/unused global CSS tokens and ensuring there is a single source of truth for CSS variables used by Tailwind theme tokens (background/foreground/card/primary/etc.), so that the deployed UI reliably reflects the Phoenix dark-gold theme.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-refactor-the-applayout-header-navigation-to-match-the-uploaded-reference-style-a-premium-dark-header-with-gold-accent-treatment-phoenix-brand-mark-and-navigation-that-visually-matches-the-reference-active-states-spacing-and-card-like-container-styling-on-both-desktop-and-mobile",
+      "title": "Refactor the AppLayout header/navigation to match the uploaded reference style: a premium dark header with gold accent treatment, Phoenix brand mark, and navigation that visually matches the reference (active states, spacing, and card-like container styling) on both desktop and mobile.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-page-layout-to-match-the-uploaded-reference-dashboard-style-remove-the-current-centered-marketing-style-hero-feel-and-present-today-s-matches-in-a-tighter-card-based-dashboard-layout-consistent-with-the-reference-card-hierarchy-spacing-borders-and-gold-highlights-while-keeping-the-existing-data-and-links",
+      "title": "Update the Home page layout to match the uploaded reference dashboard style (remove the current centered marketing-style hero feel) and present Today’s Matches in a tighter, card-based dashboard layout consistent with the reference (card hierarchy, spacing, borders, and gold highlights) while keeping the existing data and links.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-vip-and-results-pages-styling-to-match-the-uploaded-reference-dashboard-look-vip-option-cards-safe-builder-value-accumulator-odds-train-should-look-like-prominent-gold-accent-tiles-and-results-kpi-tiles-should-match-the-reference-s-card-badge-style-gold-for-win-rate-emphasis-consistent-spacing-and-borders",
+      "title": "Update the VIP and Results pages styling to match the uploaded reference dashboard look: VIP option cards (Safe Builder / Value Accumulator / Odds Train) should look like prominent gold-accent tiles, and Results KPI tiles should match the reference’s card/badge style (gold for win rate emphasis, consistent spacing and borders).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-brand-assets-and-apply-them-in-the-ui-phoenix-logo-and-a-subtle-dark-textured-background-that-matches-the-reference-images-served-as-static-files-from-the-frontend-no-backend-image-serving",
+      "title": "Add generated static brand assets and apply them in the UI: Phoenix logo and a subtle dark textured background that matches the reference images, served as static files from the frontend (no backend image serving).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-currently-authenticated-user-can-be-granted-the-admin-role-so-that-the-admin-panel-becomes-visible-and-accessible-role-based-hidden-admin-gating-provide-a-safe-bootstrap-path-to-make-the-user-an-admin-when-there-are-no-admins-yet-or-an-admin-only-promotion-path-otherwise",
+      "title": "Ensure the currently authenticated user can be granted the Admin role so that the Admin Panel becomes visible and accessible (role-based/hidden admin gating). Provide a safe bootstrap path to make the user an admin when there are no admins yet, or an admin-only promotion path otherwise.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-panel-capabilities-for-update-results-and-track-accuracy-end-to-end-so-that-admin-actions-write-read-results-data-in-the-backend-and-are-usable-from-the-admin-panel-ui",
+      "title": "Implement Admin Panel capabilities for 'Update Results' and 'Track Accuracy' end-to-end so that admin actions write/read Results data in the backend and are usable from the Admin Panel UI.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create FlutterFlow app project \"Phoenix Predictions\" with responsive (mobile+desktop) dark analyst theme (black/gold), specified fonts, and dashboard/analytics layout styling",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Configure Firebase/Firestore collections and fields: Users, Matches, Analysis, Tickets, Results, and optional Notifications as specified",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Implement navigation and pages in required order: Home → Match Analysis → VIP → Tickets → Results → Profile → Admin Panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Home screen: show Today’s Matches with Confidence Level; link to Match Analysis and VIP; connect to Matches + Analysis",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Match Analysis page: display Form, Head-to-Head, Goal Stats, Tactical Insight, Confidence badge; VIP-only section unlocks ticket+odds; connect to Matches + Analysis",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "VIP section: Safe Builder (3 odds), Value Accumulator (5 odds), Odds Train (20–25 matches multi-day); connect to Tickets + Matches + Analysis; include Odds Train progress bar",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Results dashboard: show win rate %, last 30 days performance, wins/losses, streaks; connect to Results + Tickets",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Profile page: display user info and subscription status; upgrade button triggers payment gateways (PayFast + Flutterwave) to update subscription_type",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Subscription/VIP gating: enforce visibility/access based on subscription_type (Free / Basic VIP / Premium VIP) and conditional visibility for tickets/odds",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Admin Panel (role-based/hidden): add match, add analysis, build ticket, update results, track accuracy; write to Matches/Analysis/Tickets/Results",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Notifications system for ticket releases, results, and updates (Firestore-backed; optional collection)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Confidence badge color mapping: Very High=Gold, High=Green, Moderate=Orange, Low=Red",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Phase 2 enhancements (optional): AI assistant (ChatGPT API) for analysis/market suggestions, probability scoring display for markets, and push notifications",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Create backend data models and persistent storage (in the Motoko single-actor canister) equivalent to the requested Firestore collections and fields: Users{name:string,email:string,subscription_type:Free|Basic|Premium,join_date:timestamp}; Matches{match_id:auto,league:string,teams:string,kickoff_date:timestamp}; Analysis{match_id:reference,form:array,head_to_head:array,goal_stats:object,tactical_insight:string,confidence_level:Very High|High|Moderate|Low}; Tickets{ticket_type:Safe|Value|Train,odds:float,selections:array of match_ids,status:Pending|Win|Loss}; Results{ticket_id:reference,result:Win|Loss,date_completed:timestamp,ROI:float}; Notifications(optional){user_id:reference,message:string,type:info|alert,sent_at:timestamp}.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Align backend role APIs with frontend expectations by ensuring there is a backend method to return the caller’s role (admin vs non-admin/guest) that matches the frontend’s `useCurrentUser()` usage (currently calling `getCallerUserRole()`).",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Phoenix Predictions",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
