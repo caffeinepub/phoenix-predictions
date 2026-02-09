@@ -1,11 +1,11 @@
 import { RouterProvider, createRouter, createRoute, createRootRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import AppLayout from './components/layout/AppLayout';
-import HomePage from './pages/HomePage';
-import MatchAnalysisPage from './pages/MatchAnalysisPage';
-import VipPage from './pages/VipPage';
-import TicketsPage from './pages/TicketsPage';
-import ResultsPage from './pages/ResultsPage';
+import DashboardPage from './pages/DashboardPage';
+import SimulatorPage from './pages/SimulatorPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import MonteCarloPage from './pages/MonteCarloPage';
+import LivePage from './pages/LivePage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPanelPage from './pages/AdminPanelPage';
 
@@ -16,31 +16,31 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: HomePage,
+  component: DashboardPage,
 });
 
-const matchAnalysisRoute = createRoute({
+const simulatorRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/match/$matchId',
-  component: MatchAnalysisPage,
+  path: '/simulator',
+  component: SimulatorPage,
 });
 
-const vipRoute = createRoute({
+const analyticsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/vip',
-  component: VipPage,
+  path: '/analytics',
+  component: AnalyticsPage,
 });
 
-const ticketsRoute = createRoute({
+const monteCarloRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/tickets',
-  component: TicketsPage,
+  path: '/monte-carlo',
+  component: MonteCarloPage,
 });
 
-const resultsRoute = createRoute({
+const liveRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/results',
-  component: ResultsPage,
+  path: '/live',
+  component: LivePage,
 });
 
 const profileRoute = createRoute({
@@ -57,10 +57,10 @@ const adminRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  matchAnalysisRoute,
-  vipRoute,
-  ticketsRoute,
-  resultsRoute,
+  simulatorRoute,
+  analyticsRoute,
+  monteCarloRoute,
+  liveRoute,
   profileRoute,
   adminRoute,
 ]);

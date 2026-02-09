@@ -1,77 +1,43 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin bootstrap/promotion gating and Admin Panel Results + Accuracy UI",
+  "title": "Deep link + in-app control for Live Camera Recording tab",
   "requirements": [
     {
-      "id": "REQ-21",
-      "summary": "Implement safe admin bootstrap/promotion UI and role-based gating so the Admin Panel is visible only to admins, with a one-time first-admin bootstrap when no admins exist.",
+      "id": "REQ-64",
+      "summary": "Support a query param deep link that opens the Live page with the Camera Recording tab selected on first render.",
       "acceptanceCriteria": [
-        "When a user is admin, the PrimaryNav shows the 'Admin' link and '/admin' renders the Admin Panel instead of AccessDeniedScreen.",
-        "When a user is not admin, the 'Admin' link is not shown and navigating to '/admin' shows AccessDeniedScreen.",
-        "A newly deployed canister with zero admins supports a one-time bootstrap flow that allows the first authenticated user to become admin (subsequent users cannot use the bootstrap flow once an admin exists).",
-        "If an admin already exists, only an existing admin can promote another principal to admin.",
-        "The frontend refreshes the cached current user role after the admin role is granted (Admin link appears without requiring a hard reload)."
+        "Navigating to the Live page with a query parameter (e.g. /live?mode=camera) opens the Live page with the 'Camera Recording' tab selected.",
+        "Navigating to /live with no query parameter continues to default to the existing 'Simulated Live Feed' tab.",
+        "Switching tabs in the UI keeps working as it does now and does not break the simulated polling pause/refetch behavior.",
+        "All user-facing text related to this behavior is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/LivePage.tsx",
           "operation": "modify",
-          "description": "Add React Query hooks for admin bootstrap/promotion and admin-gating checks (e.g., call backend capabilities like bootstrapAdmin(), promoteToAdmin(), isAdminPanelVisible()); on success, invalidate ['currentUserRole'] so admin state updates without reload. Verify the component's usage instructions before implementing."
+          "description": "Initialize the Live page tab state from a URL query parameter (mode=camera) on first render while preserving the existing default ('simulated') when the parameter is absent/invalid; ensure tab switching continues to drive captureMode and that simulated polling remains paused whenever captureMode is 'camera'. This wiring must keep all user-facing text in English. Note: the camera experience relies on the existing CameraCaptureRecorderCard which uses the selected 'camera' component's useCamera hook—verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/admin/AdminRoute.tsx",
+          "path": "frontend/src/utils/urlParams.ts",
           "operation": "modify",
-          "description": "Extend the admin guard to support a one-time bootstrap path: when user is authenticated but not admin, query whether bootstrap is available (via backend capability) and render a bootstrap screen; otherwise render existing AccessDeniedScreen. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-          "operation": "create",
-          "description": "Create a bootstrap UI shown only when no admins exist: explain that the first authenticated user can become admin, provide a single-action button to call bootstrapAdmin(), and show English success/error messaging; on success, trigger role refetch (query invalidation) so PrimaryNav updates. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Add an admin-only 'Promote to Admin' section (e.g., under an existing tab) that allows an admin to input a Principal text and call promoteToAdmin(); show English success/error toasts and invalidate ['currentUserRole'] after promotion. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useCurrentUser.ts",
-          "operation": "modify",
-          "description": "Ensure current-user role caching/refresh behavior is compatible with post-mutation invalidation (e.g., keep queryKey stable and avoid role being stuck as guest after bootstrap/promotion). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/navigation/PrimaryNav.tsx",
-          "operation": "modify",
-          "description": "Confirm admin link visibility reacts to live role changes (no hard reload) by relying on useCurrentUser() role query; no new routes added. Verify the component's usage instructions before implementing."
+          "description": "Add (or extend) a small, non-breaking utility helper to read a specific query parameter value in a way compatible with the app’s routing patterns (regular search and hash search), so LivePage can reliably interpret mode=camera without duplicating parsing logic."
         }
       ]
     },
     {
-      "id": "REQ-23",
-      "summary": "Add Admin Panel UI for updating ticket results and tracking accuracy using backend Results data, and update ResultsPage to read consistent backend results rather than client-only assumptions.",
+      "id": "REQ-65",
+      "summary": "Add an in-page control on Live that switches directly into Camera Recording mode without manual tab selection and without starting the camera.",
       "acceptanceCriteria": [
-        "Backend has a Results data structure stored in-canister and admin-only mutation(s) to record/update a ticket’s result (e.g., win/loss) and completion time, keyed by ticket id.",
-        "Non-admin callers cannot create/update results and receive an authorization failure.",
-        "Frontend Admin Panel includes a usable UI to set a ticket result (Win/Loss) for an existing ticket and submit it successfully.",
-        "Frontend Admin Panel includes a 'Track Accuracy' view that shows accuracy metrics computed from stored results (at minimum: total decided tickets, wins, losses, win rate %).",
-        "Admin Panel success/error toasts are shown in English for results updates and accuracy actions.",
-        "ResultsPage continues to function; if it relies on results data, it must read from the backend Results source (or remain consistent with stored results) rather than requiring manual client-only assumptions."
+        "Live page includes a clearly labeled control (English text) that switches the Live page into 'Camera Recording' mode when clicked.",
+        "The control does not start the camera automatically; it only switches to the camera tab so the user can click 'Enable Camera'.",
+        "The existing bottom tab navigation and desktop navigation remain unchanged and continue to route to /live."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/LivePage.tsx",
           "operation": "modify",
-          "description": "Add React Query hooks to read results and accuracy and to update results (e.g., getAllResultsWithTickets(), calculateAccuracy(), updateTicketResult()); include admin-friendly error handling so authorization traps show as English toast errors in the UI layer. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Replace the Accuracy placeholder with a working 'Track Accuracy' view that reads backend results and displays total decided, wins, losses, and win rate %. Add an 'Update Results' UI (within Admin Panel, e.g., in Accuracy tab or a new Results tab) allowing admins to select an existing ticket id and set result to Win/Loss, then submit via updateTicketResult(); show English success/error toasts. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/ResultsPage.tsx",
-          "operation": "modify",
-          "description": "Refactor the Results dashboard to compute metrics from backend results data (e.g., getAllResultsWithTickets()) and keep the Recent Results list consistent with stored results; if ticket details are still displayed, merge ticket metadata with results statuses rather than trusting client-only ticket.status. Verify the component's usage instructions before implementing."
+          "description": "Add a clearly labeled in-page UI control (e.g., a Button labeled \"Open live camera\") that sets captureMode to 'camera' when clicked, without invoking any camera-start logic; ensure it does not alter existing navigation components (PrimaryNav/BottomTabNav) and keeps all user-facing text in English. Note: the camera tab uses CameraCaptureRecorderCard which relies on the selected 'camera' component—verify the component's usage instructions before implementing."
         }
       ]
     }

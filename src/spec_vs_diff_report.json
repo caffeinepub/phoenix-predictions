@@ -1,75 +1,14 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T15:06:58.417Z",
-  "summary": "Diff implements an admin-gated route with a one-time bootstrap UI flow, updates current-user role fetching to use `getCallerUserRole()` with aggressive refetching, and starts wiring backend-stored results into ResultsPage and Admin Panel hooks. However, the diff summary does not provide enough evidence that all backend admin/role endpoints and the full Results+Accuracy data requirements (notably completion time and detailed accuracy metrics) are implemented end-to-end.",
-  "missing_requirements": [
-    {
-      "id": "REQ-22",
-      "requirement": "Backend exposes a `getCallerUserRole()` (or frontend updated to use existing role API) callable for signed-in users, returning admin vs non-admin reliably without unauthorized traps.",
-      "reason": "Frontend now calls `actor.getCallerUserRole()` via `useCurrentUser()`, but the provided `backend/main.mo` excerpt is truncated before showing any `getCallerUserRole` definition or its authorization behavior.",
-      "evidence": [
-        "frontend/src/hooks/useCurrentUser.ts",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "requirement": "If an admin already exists, only an existing admin can promote another principal to admin.",
-      "reason": "Admin promotion is referenced from the UI/hook imports (`usePromoteToAdmin`), but the diff summary does not show the backend authorization check that restricts promotion to existing admins.",
-      "evidence": [
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)",
-        "frontend/src/hooks/useQueries.ts (truncated)",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "requirement": "Backend stores results keyed by ticket id and includes completion time; admin-only mutations record/update result + completion time; non-admin callers receive an authorization failure.",
-      "reason": "The backend excerpt shows `let results = Map.empty<Nat, TicketStatus>();` but no completion time storage is visible, and the actual admin-only mutation(s) and non-admin authorization failure behavior are not shown in the truncated diff summary.",
-      "evidence": [
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "requirement": "Admin Panel 'Track Accuracy' view shows at minimum total decided tickets, wins, losses, and win rate % computed from stored results.",
-      "reason": "AdminPanelPage references `useCalculateAccuracy()` and sets `const { data: accuracy = 0 }`, but the diff summary does not show a UI rendering the required breakdown metrics (total decided, wins, losses, win rate).",
-      "evidence": [
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "requirement": "Admin Panel success/error toasts are shown in English for both results updates and accuracy actions.",
-      "reason": "Toasts are visible for match/analysis operations in the shown portion of AdminPanelPage and for bootstrap in AdminBootstrapScreen, but the diff summary does not show success/error toasts specifically for updating results or running accuracy calculations.",
-      "evidence": [
-        "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Added backend migration scaffolding (`backend/migration.mo`) and enabled migration in `backend/main.mo`.",
-      "reason": "BuildRequest constraints emphasize keeping a single Motoko actor in `backend/main.mo`; adding a migration module is not requested by any listed requirement (REQ-21/22/23). While it may be harmless, it is extra functionality beyond the request.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (truncated)"
-      ]
-    }
-  ],
-  "confidence": 0.56,
+  "generatedAt": "2026-02-09T07:20:43.343Z",
+  "summary": "LivePage now supports selecting the initial Live tab via a URL query parameter (mode=camera) and adds an in-page “Open live camera” button to switch to the Camera Recording tab without auto-starting camera capture. Polling/refetch logic is gated to avoid running while in camera mode, preserving simulated mode behavior.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.78,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-    "frontend/src/components/admin/AdminRoute.tsx",
-    "frontend/src/hooks/useCurrentUser.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/ResultsPage.tsx",
+    "frontend/src/pages/LivePage.tsx",
     "project_state.json"
   ]
 }

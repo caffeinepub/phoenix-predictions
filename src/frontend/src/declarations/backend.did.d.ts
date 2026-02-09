@@ -10,44 +10,22 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface Analysis {
-  'tactical_insight' : string,
-  'head_to_head' : Array<string>,
-  'form' : Array<string>,
-  'match_id' : bigint,
-  'confidence_level' : ConfidenceLevel,
+export interface Game {
+  'multiplier' : number,
+  'duration' : number,
+  'timestamp' : Time,
+  'flight_curve' : [] | [Array<number>],
 }
-export type ConfidenceLevel = { 'low' : null } |
-  { 'veryHigh' : null } |
-  { 'high' : null } |
-  { 'moderate' : null };
-export interface Match {
-  'teams' : string,
-  'league' : string,
-  'kickoff_date' : Time,
+export interface Pattern {
+  'pattern' : string,
+  'name' : string,
+  'description' : string,
+  'detected' : boolean,
 }
 export type SubscriptionType = { 'premium' : null } |
   { 'free' : null } |
   { 'basic' : null };
-export interface Ticket {
-  'status' : TicketStatus,
-  'odds' : number,
-  'ticket_type' : TicketType,
-  'selections' : Array<bigint>,
-}
-export type TicketStatus = { 'win' : null } |
-  { 'pending' : null } |
-  { 'loss' : null };
-export type TicketType = { 'train' : null } |
-  { 'value' : null } |
-  { 'safe' : null };
 export type Time = bigint;
-export interface User {
-  'join_date' : Time,
-  'name' : string,
-  'email' : string,
-  'subscription_type' : SubscriptionType,
-}
 export interface UserProfile {
   'join_date' : Time,
   'name' : string,
@@ -59,38 +37,16 @@ export type UserRole = { 'admin' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addAnalysis' : ActorMethod<
-    [bigint, Array<string>, Array<string>, string, ConfidenceLevel],
-    undefined
-  >,
-  'addMatch' : ActorMethod<[string, string, Time], bigint>,
+  'addGame' : ActorMethod<[Game], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'bootstrapAdmin' : ActorMethod<[], undefined>,
-  'calculateAccuracy' : ActorMethod<[], number>,
-  'createTicket' : ActorMethod<[TicketType, number, Array<bigint>], bigint>,
-  'getAllAnalyses' : ActorMethod<[], Array<Analysis>>,
-  'getAllMatches' : ActorMethod<[], Array<[bigint, Match, [] | [Analysis]]>>,
-  'getAllResults' : ActorMethod<[], Array<TicketStatus>>,
-  'getAllResultsWithTickets' : ActorMethod<[], Array<[bigint, TicketStatus]>>,
-  'getAllTickets' : ActorMethod<[], Array<[bigint, Ticket]>>,
-  'getAllUsers' : ActorMethod<[], Array<User>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getMatchesByConfidenceLevel' : ActorMethod<
-    [ConfidenceLevel],
-    Array<[bigint, Match, Analysis]>
-  >,
-  'getResult' : ActorMethod<[bigint], [] | [TicketStatus]>,
-  'getTicket' : ActorMethod<[bigint], [] | [Ticket]>,
-  'getTicketTypes' : ActorMethod<[], Array<[bigint, TicketType]>>,
+  'getPatterns' : ActorMethod<[], Array<Pattern>>,
+  'getRecentGames' : ActorMethod<[], Array<Game>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
-  'getUserSubscription' : ActorMethod<[Principal], [] | [SubscriptionType]>,
-  'isAdminPanelVisible' : ActorMethod<[], boolean>,
+  'isAdminBootstrapAvailable' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'promoteToAdmin' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'updateTicketResult' : ActorMethod<[bigint, TicketStatus], undefined>,
-  'upgradeSubscription' : ActorMethod<[SubscriptionType], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

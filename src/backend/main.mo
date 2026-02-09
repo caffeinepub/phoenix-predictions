@@ -1,18 +1,19 @@
 import Text "mo:core/Text";
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
-import Time "mo:core/Time";
-import Array "mo:core/Array";
-import Runtime "mo:core/Runtime";
-import Iter "mo:core/Iter";
 import Order "mo:core/Order";
+import Time "mo:core/Time";
 import Principal "mo:core/Principal";
-import Migration "migration";
+import Array "mo:core/Array";
+import Iter "mo:core/Iter";
+import Runtime "mo:core/Runtime";
+import Float "mo:core/Float";
+import List "mo:core/List";
+import Nat "mo:core/Nat";
+import Debug "mo:core/Debug";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-// Enable persistent state with migration.
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -140,9 +141,112 @@ actor {
     };
   };
 
+  public type AIPrediction = {
+    id : Nat;
+    analysis : Text;
+    confidence : Float;
+    isVisible : Bool;
+  };
+
+  public type OddsTrainLeg = {
+    match_id : Nat;
+    outcome : Text;
+    odds : Float;
+    status : TicketStatus;
+  };
+
+  public type OddsTrain = {
+    legs : [OddsTrainLeg];
+    completed_legs : Nat;
+    remaining_legs : Nat;
+    estimated_payout : Float;
+  };
+
+  public type Notification = {
+    message : Text;
+    timestamp : Time.Time;
+  };
+
+  public type GamificationBadge = {
+    id : Nat;
+    name : Text;
+    description : Text;
+    earned : Bool;
+  };
+
+  public type LeaderboardEntry = {
+    user_id : Nat;
+    rank : Nat;
+  };
+
+  public type VIPSubscription = {
+    user_id : Nat;
+    subscription_type : SubscriptionType;
+    expiration_date : Time.Time;
+    trial : Bool;
+  };
+
+  public type Game = {
+    multiplier : Float;
+    duration : Float;
+    timestamp : Time.Time;
+    flight_curve : ?[Float];
+  };
+
+  public type Pattern = {
+    name : Text;
+    description : Text;
+    pattern : Text;
+    detected : Bool;
+  };
+
+  public type Analytics = {
+    mean : Float;
+    median : Float;
+    std_dev : Float;
+    min : Float;
+    max : Float;
+    q_25 : Float;
+    q_75 : Float;
+    under_1x : Nat;
+    x_1_to_2 : Nat;
+    x_2_to_5 : Nat;
+    x_5_to_10 : Nat;
+    x_10_plus : Nat;
+  };
+
+  public type MonteCarloParameters = {
+    n_simulations : Nat;
+    strategy : Text;
+    initial_balance : Float;
+    bet_amount : Float;
+  };
+
+  public type MonteCarloResults = {
+    ending_balance_distribution : [Float];
+    average_return : Float;
+    probability_of_ruin : Float;
+  };
+
+  public type MonteCarloSimulation = {
+    parameters : MonteCarloParameters;
+    results : MonteCarloResults;
+    interpretation : Text;
+  };
+
+  public type AviatorDiscovery = {
+    app_name : Text;
+    version : Text;
+    available_methods : [Text];
+  };
+
+  public type Empty = {};
+
   let users = Map.empty<Principal, User>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  var games = List.empty<Game>();
   var nextMatchId = 1;
+  var nextGameId = 0;
   let matches = Map.empty<Nat, Match>();
   let analyses = Map.empty<Nat, Analysis>();
   var nextTicketId = 1;
@@ -150,7 +254,24 @@ actor {
   let results = Map.empty<Nat, TicketStatus>();
   var hasBootstrappedAdmin = false;
 
-  // Sync user with user profile.
+  var nextPredictionId = 1;
+  var oddsTrain = List.empty<OddsTrainLeg>();
+
+  let notifications = Map.empty<Principal, List.List<Notification>>();
+  let aiPredictions = Map.empty<Nat, AIPrediction>();
+
+  func hasVIPSubscription(caller : Principal) : Bool {
+    switch (userProfiles.get(caller)) {
+      case (null) { false };
+      case (?profile) {
+        switch (profile.subscription_type) {
+          case (#basic or #premium) { true };
+          case (#free) { false };
+        };
+      };
+    };
+  };
+
   func syncUserWithProfile(caller : Principal) {
     switch (userProfiles.get(caller)) {
       case (?validProfile) {
@@ -166,186 +287,17 @@ actor {
     };
   };
 
-  // Bootstrap: Grant admin to first caller if no admin exists yet.
-  public shared ({ caller }) func bootstrapAdmin() : async () {
-    // Check if already bootstrapped
-    if (hasBootstrappedAdmin) {
-      Runtime.trap("Admin already bootstrapped");
-    };
-
-    // Create initial admin profile without requiring user permission
-    let initialProfile : UserProfile = {
-      name = "Initial Admin";
-      email = "admin@example.com";
-      subscription_type = #premium;
-      join_date = Time.now();
-    };
-
-    userProfiles.add(caller, initialProfile);
-    syncUserWithProfile(caller);
-
-    // Assign admin role - this is safe because assignRole has internal admin checks
-    // but on first call when there are no admins, it should allow bootstrapping
-    AccessControl.assignRole(accessControlState, caller, caller, #admin);
-
-    hasBootstrappedAdmin := true;
+  public query ({ caller }) func isAdminBootstrapAvailable() : async Bool {
+    not hasBootstrappedAdmin;
   };
 
-  // Admin-only: Promote a user to admin role.
-  public shared ({ caller }) func promoteToAdmin(user : Principal) : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can promote users");
-    };
-
-    // Ensure the user has a profile (is registered)
-    switch (userProfiles.get(user)) {
-      case (null) {
-        Runtime.trap("User must have a profile before being promoted to admin");
-      };
-      case (?_profile) {
-        AccessControl.assignRole(accessControlState, caller, user, #admin);
-      };
-    };
-  };
-
-  // Check if admin panel should be visible to caller.
-  public query ({ caller }) func isAdminPanelVisible() : async Bool {
-    AccessControl.isAdmin(accessControlState, caller);
-  };
-
-  // Admin-only: Add match.
-  public shared ({ caller }) func addMatch(league : Text, teams : Text, kickoff_date : Time.Time) : async Nat {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    let matchId = nextMatchId;
-    let newMatch : Match = {
-      league;
-      teams;
-      kickoff_date;
-    };
-    matches.add(matchId, newMatch);
-    nextMatchId += 1;
-    matchId;
-  };
-
-  // Admin-only: Add analysis.
-  public shared ({ caller }) func addAnalysis(match_id : Nat, form : [Text], head_to_head : [Text], tactical_insight : Text, confidence_level : ConfidenceLevel) : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    let newAnalysis : Analysis = {
-      match_id;
-      form;
-      head_to_head;
-      tactical_insight;
-      confidence_level;
-    };
-    analyses.add(match_id, newAnalysis);
-  };
-
-  // Admin-only: Create ticket.
-  public shared ({ caller }) func createTicket(ticket_type : TicketType, odds : Float, selections : [Nat]) : async Nat {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    let ticketId = nextTicketId;
-    let newTicket : Ticket = {
-      ticket_type;
-      odds;
-      selections;
-      status = #pending;
-    };
-    tickets.add(ticketId, newTicket);
-    nextTicketId += 1;
-    ticketId;
-  };
-
-  // Admin-only: Update ticket result (for Admin Panel 'Update Results').
-  public shared ({ caller }) func updateTicketResult(ticketId : Nat, result : TicketStatus) : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-
-    // Verify ticket exists
-    switch (tickets.get(ticketId)) {
-      case (null) {
-        Runtime.trap("Ticket not found");
-      };
-      case (?ticket) {
-        // Update the result
-        results.add(ticketId, result);
-
-        // Also update the ticket status
-        let updatedTicket : Ticket = {
-          ticket_type = ticket.ticket_type;
-          odds = ticket.odds;
-          selections = ticket.selections;
-          status = result;
-        };
-        tickets.add(ticketId, updatedTicket);
-      };
-    };
-  };
-
-  // Admin-only: Calculate accuracy (for Admin Panel 'Track Accuracy').
-  public query ({ caller }) func calculateAccuracy() : async Float {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    let resultsArray = results.values().toArray();
-    let nonPendingResults = resultsArray.filter(
-      func(status) {
-        status != #pending;
-      }
-    );
-    let completedResults = nonPendingResults.size();
-    if (completedResults == 0) { return 0.0; };
-    let winCount = nonPendingResults.filter(
-      func(status) { status == #win }
-    ).size();
-    winCount.toFloat() / completedResults.toFloat() * 100.0;
-  };
-
-  // Admin-only: Get all results with ticket IDs (for Admin Panel).
-  public query ({ caller }) func getAllResultsWithTickets() : async [(Nat, TicketStatus)] {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    results.toArray();
-  };
-
-  // Public: Get all matches (accessible to all including guests).
-  public query ({ caller }) func getAllMatches() : async [(Nat, Match, ?Analysis)] {
-    matches.toArray().map(func((matchId, match)) { (matchId, match) }).map(
-      func((matchId, match)) {
-        let analysis = analyses.get(matchId);
-        (matchId, match, analysis);
-      }
-    );
-  };
-
-  // Public: Get matches by confidence level (accessible to all including guests).
-  public query ({ caller }) func getMatchesByConfidenceLevel(level : ConfidenceLevel) : async [(Nat, Match, Analysis)] {
-    let filteredAnalyses = analyses.filter(func(_id, analysis) { analysis.confidence_level == level });
-    let filteredResults = filteredAnalyses.toArray().map(
-      func((analysisId, analysis)) {
-        let match = matches.get(analysisId);
-        (analysisId, match, analysis);
-      }
-    );
-    filteredResults.filter(func(_item) { true }).map(func(item) { switch (item) { case (id, ?match, analysis) { (id, match, analysis) }; case (_) { Runtime.trap("Unreachable resource computation") } } });
-  };
-
-  // Required by frontend: Get caller's own profile.
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can access profiles");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
     };
     userProfiles.get(caller);
   };
 
-  // Get user profile (own profile or admin can view any).
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
@@ -353,151 +305,63 @@ actor {
     userProfiles.get(user);
   };
 
-  // Save caller's own profile.
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
     syncUserWithProfile(caller);
   };
 
-  // Upgrade subscription (user can only upgrade their own).
-  public shared ({ caller }) func upgradeSubscription(newType : SubscriptionType) : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Only users can upgrade");
-    };
-    switch (userProfiles.get(caller)) {
-      case (null) { Runtime.trap("User not found") };
-      case (?existingProfile) {
-        let updatedProfile : UserProfile = {
-          name = existingProfile.name;
-          email = existingProfile.email;
-          subscription_type = newType;
-          join_date = existingProfile.join_date;
-        };
-        userProfiles.add(caller, updatedProfile);
-      };
-    };
-    syncUserWithProfile(caller);
+  public query ({ caller }) func getRecentGames() : async [Game] {
+    games.toArray();
   };
 
-  // Get ticket (VIP content - requires subscription check).
-  public query ({ caller }) func getTicket(ticketId : Nat) : async ?Ticket {
-    switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Unauthorized: VIP subscription required to view tickets");
-      };
-      case (?userProfile) {
-        switch (userProfile.subscription_type) {
-          case (#free) {
-            Runtime.trap("Unauthorized: VIP subscription required to view tickets");
-          };
-          case (#basic or #premium) {
-            tickets.get(ticketId);
-          };
-        };
-      };
-    };
+  public shared ({ caller }) func addGame(game : Game) : async () {
+    let newGameList = List.fromArray<Game>([game]);
+    games := newGameList;
   };
 
-  // Get all tickets (VIP content - requires subscription check).
-  public query ({ caller }) func getAllTickets() : async [(Nat, Ticket)] {
-    switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Unauthorized: VIP subscription required to view tickets");
-      };
-      case (?userProfile) {
-        switch (userProfile.subscription_type) {
-          case (#free) {
-            Runtime.trap("Unauthorized: VIP subscription required to view tickets");
-          };
-          case (#basic or #premium) {
-            tickets.toArray();
-          };
-        };
-      };
-    };
-  };
+  let patterns : [Pattern] = [
+    {
+      name = "Sequential";
+      description = "Repeating or incrementing/ decrementing patterns.";
+      pattern = "1.2x, 1.3x, 1.4x, 1.5x";
+      detected = false;
+    },
+    {
+      name = "Range";
+      description = "Clustered within a specific range.";
+      pattern = "2.0x - 2.5x";
+      detected = false;
+    },
+    {
+      name = "Volatility Spike";
+      description = "Sudden shift from low to high multipliers or vice versa.";
+      pattern = "1x-2x, 1x-2x, 10x-20x";
+      detected = false;
+    },
+    {
+      name = "Repeating";
+      description = "Recurring patterns (e.g. alternating between low and high values).";
+      pattern = "1x-2x, 10x-20x";
+      detected = false;
+    },
+    {
+      name = "Plateau";
+      description = "Sustained period of similar multiplier values.";
+      pattern = "1.1x - 1.3x";
+      detected = false;
+    },
+    {
+      name = "Peak/Trough";
+      description = "Sequences building up to a peak value and then declining.";
+      pattern = "1x, 2x, 4x, 8x, 16.x, 4x, 2x, 1x";
+      detected = false;
+    },
+  ];
 
-  // Get user subscription (own subscription or admin can view any).
-  public query ({ caller }) func getUserSubscription(user : Principal) : async ?SubscriptionType {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own subscription");
-    };
-    switch (userProfiles.get(user)) {
-      case (null) { null };
-      case (?userProfile) { ?userProfile.subscription_type };
-    };
-  };
-
-  // Admin-only: Get all users.
-  public query ({ caller }) func getAllUsers() : async [User] {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    users.values().toArray().sort(User.compareBySubscriptionType);
-  };
-
-  // Get ticket types (VIP content - requires subscription check).
-  public query ({ caller }) func getTicketTypes() : async [(Nat, TicketType)] {
-    switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Unauthorized: VIP subscription required to view ticket types");
-      };
-      case (?userProfile) {
-        switch (userProfile.subscription_type) {
-          case (#free) {
-            Runtime.trap("Unauthorized: VIP subscription required to view ticket types");
-          };
-          case (#basic or #premium) {
-            tickets.toArray().map(func((id, ticket)) { (id, ticket.ticket_type) });
-          };
-        };
-      };
-    };
-  };
-
-  // Public: Get all analyses (accessible to all including guests).
-  public query ({ caller }) func getAllAnalyses() : async [Analysis] {
-    analyses.values().toArray().sort(Analysis.compareByConfidence);
-  };
-
-  // Get user result (VIP content - requires subscription check).
-  public query ({ caller }) func getResult(ticketId : Nat) : async ?TicketStatus {
-    switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Unauthorized: VIP subscription required to view ticket results");
-      };
-      case (?userProfile) {
-        switch (userProfile.subscription_type) {
-          case (#free) {
-            Runtime.trap("Unauthorized: VIP subscription required to view ticket results");
-          };
-          case (#basic or #premium) {
-            results.get(ticketId);
-          };
-        };
-      };
-    };
-  };
-
-  // Get all results (VIP content - requires subscription check).
-  public query ({ caller }) func getAllResults() : async [TicketStatus] {
-    switch (userProfiles.get(caller)) {
-      case (null) {
-        Runtime.trap("Unauthorized: VIP subscription required to view ticket results");
-      };
-      case (?userProfile) {
-        switch (userProfile.subscription_type) {
-          case (#free) {
-            Runtime.trap("Unauthorized: VIP subscription required to view ticket results");
-          };
-          case (#basic or #premium) {
-            results.values().toArray();
-          };
-        };
-      };
-    };
+  public query ({ caller }) func getPatterns() : async [Pattern] {
+    patterns;
   };
 };

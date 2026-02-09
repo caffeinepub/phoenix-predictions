@@ -16,7 +16,3 @@ export function getSubscriptionLabel(type: SubscriptionType): string {
 export function hasVipAccess(type: SubscriptionType): boolean {
   return type === SubscriptionType.basic || type === SubscriptionType.premium;
 }
-
-export function hasPremiumAccess(type: SubscriptionType): boolean {
-  return type === SubscriptionType.premium;
-}

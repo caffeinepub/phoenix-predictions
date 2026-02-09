@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Roboto:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,65 +7,59 @@
 @layer base {
     :root {
         --radius: 0.5rem;
-        /* Phoenix Dark Gold Theme */
+        /* Aviator Cockpit Theme - Dark with Neon Lime */
         --background: 0.08 0 0; /* Deep black #050505 */
         --foreground: 0.95 0 0; /* Bright white #F2F2F2 */
-        --card: 0.15 0.01 0; /* Charcoal #1C1C1C */
+        --card: 0.12 0.01 0; /* Dark charcoal #141414 */
         --card-foreground: 0.95 0 0;
-        --popover: 0.12 0 0;
+        --popover: 0.10 0 0;
         --popover-foreground: 0.95 0 0;
-        --primary: 0.78 0.14 85; /* Rich Gold #D4AF37 */
+        --primary: 0.88 0.24 130; /* Neon Lime #A3FF00 */
         --primary-foreground: 0.08 0 0;
-        --secondary: 0.22 0.01 0; /* Dark gray #2A2A2A */
+        --secondary: 0.18 0.01 0; /* Dark gray #1F1F1F */
         --secondary-foreground: 0.95 0 0;
-        --muted: 0.25 0 0;
+        --muted: 0.22 0 0;
         --muted-foreground: 0.60 0 0; /* Medium gray */
-        --accent: 0.78 0.14 85; /* Gold accent */
+        --accent: 0.88 0.24 130; /* Neon Lime accent */
         --accent-foreground: 0.08 0 0;
         --destructive: 0.55 0.22 25; /* Red */
         --destructive-foreground: 0.98 0 0;
-        --border: 0.28 0.02 85; /* Subtle gold border */
-        --input: 0.20 0 0;
-        --ring: 0.78 0.14 85;
-        --chart-1: 0.78 0.14 85; /* Gold */
-        --chart-2: 0.65 0.15 145; /* Green */
+        --border: 0.25 0.03 130; /* Subtle lime border */
+        --input: 0.18 0 0;
+        --ring: 0.88 0.24 130;
+        --chart-1: 0.88 0.24 130; /* Neon Lime */
+        --chart-2: 0.65 0.20 180; /* Cyan */
         --chart-3: 0.70 0.18 50; /* Orange */
         --chart-4: 0.55 0.22 25; /* Red */
-        --chart-5: 0.60 0.08 240;
-        
-        /* Confidence level colors */
-        --confidence-very-high: 0.78 0.14 85; /* Gold */
-        --confidence-high: 0.65 0.15 145; /* Green */
-        --confidence-moderate: 0.70 0.18 50; /* Orange */
-        --confidence-low: 0.55 0.22 25; /* Red */
+        --chart-5: 0.60 0.15 280; /* Purple */
     }
 
     .dark {
-        /* Phoenix Dark Gold Theme - enforced */
+        /* Aviator Cockpit Theme - enforced */
         --background: 0.08 0 0;
         --foreground: 0.95 0 0;
-        --card: 0.15 0.01 0;
+        --card: 0.12 0.01 0;
         --card-foreground: 0.95 0 0;
-        --popover: 0.12 0 0;
+        --popover: 0.10 0 0;
         --popover-foreground: 0.95 0 0;
-        --primary: 0.78 0.14 85;
+        --primary: 0.88 0.24 130;
         --primary-foreground: 0.08 0 0;
-        --secondary: 0.22 0.01 0;
+        --secondary: 0.18 0.01 0;
         --secondary-foreground: 0.95 0 0;
-        --muted: 0.25 0 0;
+        --muted: 0.22 0 0;
         --muted-foreground: 0.60 0 0;
-        --accent: 0.78 0.14 85;
+        --accent: 0.88 0.24 130;
         --accent-foreground: 0.08 0 0;
         --destructive: 0.55 0.22 25;
         --destructive-foreground: 0.08 0 0;
-        --border: 0.28 0.02 85;
-        --input: 0.20 0 0;
-        --ring: 0.78 0.14 85;
-        --chart-1: 0.78 0.14 85;
-        --chart-2: 0.65 0.15 145;
+        --border: 0.25 0.03 130;
+        --input: 0.18 0 0;
+        --ring: 0.88 0.24 130;
+        --chart-1: 0.88 0.24 130;
+        --chart-2: 0.65 0.20 180;
         --chart-3: 0.70 0.18 50;
         --chart-4: 0.55 0.22 25;
-        --chart-5: 0.60 0.08 240;
+        --chart-5: 0.60 0.15 280;
     }
 
     * {
@@ -75,16 +69,16 @@
     body {
         @apply bg-background text-foreground;
         font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
-        background-image: url('/assets/generated/phoenix-bg-texture.dim_2048x2048.png');
+        background-image: url('/assets/generated/aviator-bg-texture.dim_2048x2048.png');
         background-size: 512px 512px;
         background-repeat: repeat;
         background-attachment: fixed;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Montserrat', 'Poppins', system-ui, -apple-system, sans-serif;
+        font-family: 'Orbitron', 'Rajdhani', system-ui, -apple-system, sans-serif;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
     }
 }
 
@@ -93,19 +87,15 @@
         text-wrap: balance;
     }
     
-    .phoenix-card {
+    .aviator-card {
         @apply bg-card border-2 border-border rounded-lg shadow-lg;
     }
     
-    .phoenix-card-gold {
-        @apply bg-card border-2 border-primary/40 rounded-lg shadow-gold-glow;
+    .aviator-card-lime {
+        @apply bg-card border-2 border-primary/40 rounded-lg shadow-aviator-glow;
     }
     
-    .gold-accent-line {
-        @apply border-t-2 border-primary/60;
-    }
-    
-    .gold-text-glow {
-        text-shadow: 0 0 20px oklch(var(--primary) / 0.5);
+    .aviator-text-glow {
+        text-shadow: 0 0 20px oklch(var(--primary) / 0.6), 0 0 40px oklch(var(--primary) / 0.3);
     }
 }

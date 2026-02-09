@@ -8,56 +8,22 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const ConfidenceLevel = IDL.Variant({
-  'low' : IDL.Null,
-  'veryHigh' : IDL.Null,
-  'high' : IDL.Null,
-  'moderate' : IDL.Null,
-});
 export const Time = IDL.Int;
+export const Game = IDL.Record({
+  'multiplier' : IDL.Float64,
+  'duration' : IDL.Float64,
+  'timestamp' : Time,
+  'flight_curve' : IDL.Opt(IDL.Vec(IDL.Float64)),
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const TicketType = IDL.Variant({
-  'train' : IDL.Null,
-  'value' : IDL.Null,
-  'safe' : IDL.Null,
-});
-export const Analysis = IDL.Record({
-  'tactical_insight' : IDL.Text,
-  'head_to_head' : IDL.Vec(IDL.Text),
-  'form' : IDL.Vec(IDL.Text),
-  'match_id' : IDL.Nat,
-  'confidence_level' : ConfidenceLevel,
-});
-export const Match = IDL.Record({
-  'teams' : IDL.Text,
-  'league' : IDL.Text,
-  'kickoff_date' : Time,
-});
-export const TicketStatus = IDL.Variant({
-  'win' : IDL.Null,
-  'pending' : IDL.Null,
-  'loss' : IDL.Null,
-});
-export const Ticket = IDL.Record({
-  'status' : TicketStatus,
-  'odds' : IDL.Float64,
-  'ticket_type' : TicketType,
-  'selections' : IDL.Vec(IDL.Nat),
-});
 export const SubscriptionType = IDL.Variant({
   'premium' : IDL.Null,
   'free' : IDL.Null,
   'basic' : IDL.Null,
-});
-export const User = IDL.Record({
-  'join_date' : Time,
-  'name' : IDL.Text,
-  'email' : IDL.Text,
-  'subscription_type' : SubscriptionType,
 });
 export const UserProfile = IDL.Record({
   'join_date' : Time,
@@ -65,132 +31,50 @@ export const UserProfile = IDL.Record({
   'email' : IDL.Text,
   'subscription_type' : SubscriptionType,
 });
+export const Pattern = IDL.Record({
+  'pattern' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'detected' : IDL.Bool,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addAnalysis' : IDL.Func(
-      [
-        IDL.Nat,
-        IDL.Vec(IDL.Text),
-        IDL.Vec(IDL.Text),
-        IDL.Text,
-        ConfidenceLevel,
-      ],
-      [],
-      [],
-    ),
-  'addMatch' : IDL.Func([IDL.Text, IDL.Text, Time], [IDL.Nat], []),
+  'addGame' : IDL.Func([Game], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'bootstrapAdmin' : IDL.Func([], [], []),
-  'calculateAccuracy' : IDL.Func([], [IDL.Float64], ['query']),
-  'createTicket' : IDL.Func(
-      [TicketType, IDL.Float64, IDL.Vec(IDL.Nat)],
-      [IDL.Nat],
-      [],
-    ),
-  'getAllAnalyses' : IDL.Func([], [IDL.Vec(Analysis)], ['query']),
-  'getAllMatches' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, Match, IDL.Opt(Analysis)))],
-      ['query'],
-    ),
-  'getAllResults' : IDL.Func([], [IDL.Vec(TicketStatus)], ['query']),
-  'getAllResultsWithTickets' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, TicketStatus))],
-      ['query'],
-    ),
-  'getAllTickets' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, Ticket))],
-      ['query'],
-    ),
-  'getAllUsers' : IDL.Func([], [IDL.Vec(User)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getMatchesByConfidenceLevel' : IDL.Func(
-      [ConfidenceLevel],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, Match, Analysis))],
-      ['query'],
-    ),
-  'getResult' : IDL.Func([IDL.Nat], [IDL.Opt(TicketStatus)], ['query']),
-  'getTicket' : IDL.Func([IDL.Nat], [IDL.Opt(Ticket)], ['query']),
-  'getTicketTypes' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, TicketType))],
-      ['query'],
-    ),
+  'getPatterns' : IDL.Func([], [IDL.Vec(Pattern)], ['query']),
+  'getRecentGames' : IDL.Func([], [IDL.Vec(Game)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
-  'getUserSubscription' : IDL.Func(
-      [IDL.Principal],
-      [IDL.Opt(SubscriptionType)],
-      ['query'],
-    ),
-  'isAdminPanelVisible' : IDL.Func([], [IDL.Bool], ['query']),
+  'isAdminBootstrapAvailable' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'promoteToAdmin' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'updateTicketResult' : IDL.Func([IDL.Nat, TicketStatus], [], []),
-  'upgradeSubscription' : IDL.Func([SubscriptionType], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const ConfidenceLevel = IDL.Variant({
-    'low' : IDL.Null,
-    'veryHigh' : IDL.Null,
-    'high' : IDL.Null,
-    'moderate' : IDL.Null,
-  });
   const Time = IDL.Int;
+  const Game = IDL.Record({
+    'multiplier' : IDL.Float64,
+    'duration' : IDL.Float64,
+    'timestamp' : Time,
+    'flight_curve' : IDL.Opt(IDL.Vec(IDL.Float64)),
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const TicketType = IDL.Variant({
-    'train' : IDL.Null,
-    'value' : IDL.Null,
-    'safe' : IDL.Null,
-  });
-  const Analysis = IDL.Record({
-    'tactical_insight' : IDL.Text,
-    'head_to_head' : IDL.Vec(IDL.Text),
-    'form' : IDL.Vec(IDL.Text),
-    'match_id' : IDL.Nat,
-    'confidence_level' : ConfidenceLevel,
-  });
-  const Match = IDL.Record({
-    'teams' : IDL.Text,
-    'league' : IDL.Text,
-    'kickoff_date' : Time,
-  });
-  const TicketStatus = IDL.Variant({
-    'win' : IDL.Null,
-    'pending' : IDL.Null,
-    'loss' : IDL.Null,
-  });
-  const Ticket = IDL.Record({
-    'status' : TicketStatus,
-    'odds' : IDL.Float64,
-    'ticket_type' : TicketType,
-    'selections' : IDL.Vec(IDL.Nat),
-  });
   const SubscriptionType = IDL.Variant({
     'premium' : IDL.Null,
     'free' : IDL.Null,
     'basic' : IDL.Null,
-  });
-  const User = IDL.Record({
-    'join_date' : Time,
-    'name' : IDL.Text,
-    'email' : IDL.Text,
-    'subscription_type' : SubscriptionType,
   });
   const UserProfile = IDL.Record({
     'join_date' : Time,
@@ -198,77 +82,29 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'subscription_type' : SubscriptionType,
   });
+  const Pattern = IDL.Record({
+    'pattern' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'detected' : IDL.Bool,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addAnalysis' : IDL.Func(
-        [
-          IDL.Nat,
-          IDL.Vec(IDL.Text),
-          IDL.Vec(IDL.Text),
-          IDL.Text,
-          ConfidenceLevel,
-        ],
-        [],
-        [],
-      ),
-    'addMatch' : IDL.Func([IDL.Text, IDL.Text, Time], [IDL.Nat], []),
+    'addGame' : IDL.Func([Game], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'bootstrapAdmin' : IDL.Func([], [], []),
-    'calculateAccuracy' : IDL.Func([], [IDL.Float64], ['query']),
-    'createTicket' : IDL.Func(
-        [TicketType, IDL.Float64, IDL.Vec(IDL.Nat)],
-        [IDL.Nat],
-        [],
-      ),
-    'getAllAnalyses' : IDL.Func([], [IDL.Vec(Analysis)], ['query']),
-    'getAllMatches' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, Match, IDL.Opt(Analysis)))],
-        ['query'],
-      ),
-    'getAllResults' : IDL.Func([], [IDL.Vec(TicketStatus)], ['query']),
-    'getAllResultsWithTickets' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, TicketStatus))],
-        ['query'],
-      ),
-    'getAllTickets' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, Ticket))],
-        ['query'],
-      ),
-    'getAllUsers' : IDL.Func([], [IDL.Vec(User)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getMatchesByConfidenceLevel' : IDL.Func(
-        [ConfidenceLevel],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, Match, Analysis))],
-        ['query'],
-      ),
-    'getResult' : IDL.Func([IDL.Nat], [IDL.Opt(TicketStatus)], ['query']),
-    'getTicket' : IDL.Func([IDL.Nat], [IDL.Opt(Ticket)], ['query']),
-    'getTicketTypes' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, TicketType))],
-        ['query'],
-      ),
+    'getPatterns' : IDL.Func([], [IDL.Vec(Pattern)], ['query']),
+    'getRecentGames' : IDL.Func([], [IDL.Vec(Game)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
-    'getUserSubscription' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Opt(SubscriptionType)],
-        ['query'],
-      ),
-    'isAdminPanelVisible' : IDL.Func([], [IDL.Bool], ['query']),
+    'isAdminBootstrapAvailable' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'promoteToAdmin' : IDL.Func([IDL.Principal], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'updateTicketResult' : IDL.Func([IDL.Nat, TicketStatus], [], []),
-    'upgradeSubscription' : IDL.Func([SubscriptionType], [], []),
   });
 };
 

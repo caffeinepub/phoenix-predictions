@@ -17,7 +17,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Inter', 'Roboto', 'system-ui', '-apple-system', 'sans-serif'],
-                heading: ['Montserrat', 'Poppins', 'system-ui', '-apple-system', 'sans-serif'],
+                heading: ['Orbitron', 'Rajdhani', 'system-ui', '-apple-system', 'sans-serif'],
             },
             colors: {
                 border: 'oklch(var(--border))',
@@ -60,11 +60,6 @@ export default {
                     4: 'oklch(var(--chart-4))',
                     5: 'oklch(var(--chart-5))'
                 },
-                gold: 'oklch(var(--primary))',
-                'confidence-very-high': 'oklch(var(--confidence-very-high))',
-                'confidence-high': 'oklch(var(--confidence-high))',
-                'confidence-moderate': 'oklch(var(--confidence-moderate))',
-                'confidence-low': 'oklch(var(--confidence-low))',
             },
             borderRadius: {
                 lg: 'var(--radius)',
@@ -72,27 +67,22 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                'gold-glow': '0 0 30px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.2)',
-            },
-            keyframes: {
-                'accordion-down': {
-                    from: { height: '0' },
-                    to: { height: 'var(--radix-accordion-content-height)' }
-                },
-                'accordion-up': {
-                    from: { height: 'var(--radix-accordion-content-height)' },
-                    to: { height: '0' }
-                },
-                'pulse-gold': {
-                    '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                    '50%': { opacity: '0.85', transform: 'scale(1.02)' }
-                }
+                'aviator-glow': '0 0 20px oklch(var(--primary) / 0.3), 0 0 40px oklch(var(--primary) / 0.15)',
             },
             animation: {
-                'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out',
-                'pulse-gold': 'pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                'pulse-lime': 'pulse-lime 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+                'pulse-lime': {
+                    '0%, 100%': {
+                        opacity: '1',
+                        boxShadow: '0 0 20px oklch(var(--primary) / 0.4)'
+                    },
+                    '50%': {
+                        opacity: '0.8',
+                        boxShadow: '0 0 30px oklch(var(--primary) / 0.6)'
+                    }
+                }
             }
         }
     },

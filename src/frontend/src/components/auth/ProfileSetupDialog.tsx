@@ -38,9 +38,9 @@ export default function ProfileSetupDialog() {
     <Dialog open={showProfileSetup} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="font-heading text-2xl">Welcome to Phoenix Predictions!</DialogTitle>
+          <DialogTitle className="font-heading text-2xl">Welcome to Aviator Analytics!</DialogTitle>
           <DialogDescription>
-            Please complete your profile to get started with football predictions.
+            Please complete your profile to get started with game analytics and simulations.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

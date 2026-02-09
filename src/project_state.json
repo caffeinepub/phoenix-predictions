@@ -1,18 +1,28 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Build \"Phoenix Predictions\": a responsive FlutterFlow + Firebase web app for professional football predictions with a dark analytics theme, defined Firestore schema, core pages (Home, Match Analysis, VIP, Tickets, Results, Profile, Admin Panel), subscription-based VIP gating, payment upgrades, notifications, and an admin dashboard for managing content and results.",
+  "projectStateVersion": 29,
+  "summary": "Expand Aviator Analytics scope to support real-time game updates sourced from a camera recording the live Aviator game, enabling analytics based on captured live footage (in addition to simulated/live-feed models).",
   "architectural_notes": [
     "Tech stack: FlutterFlow frontend + Firebase (Firestore) backend; must be testable on web and mobile browsers.",
     "Firestore schema includes Users, Matches, Analysis, Tickets, Results, and optional Notifications with fields as specified.",
     "Access control: role-based protected Admin Panel; VIP gating based on Users.subscription_type; conditional visibility for tickets/odds.",
     "Payments: integrate PayFast + Flutterwave to upgrade subscription_type.",
     "UI spec: Dark Analyst Theme colors (#0B0B0B background, #D4AF37 highlights, #1A1A1A cards, #EAEAEA text) and fonts (Montserrat/Poppins headings; Inter/Roboto body).",
-    "Admin Panel visibility depends on an admin flag/role on the signed-in user record; ensure the correct user is marked as admin and the UI gating checks that field consistently."
+    "Admin Panel visibility depends on an admin flag/role on the signed-in user record; ensure the correct user is marked as admin and the UI gating checks that field consistently.",
+    "Admin access issue triage: the user to promote/grant admin role is email `thephoenixcreativeshub@gmail.com` (name: phoenix); ensure their Users record has the expected admin flag/role field that the UI gating checks.",
+    "Admin bootstrap/promotion flow must successfully grant Admin to the authenticated user when they sign in with Internet Identity using email `thephoenixcreativeshub@gmail.com` (case-insensitive), and the frontend must reflect the new role without requiring a manual refresh.",
+    "Auth method for this build: Firebase Email & Password (not Internet Identity).",
+    "Admin gating uses Firestore Users.is_admin boolean; Admin Panel visible only when is_admin == true."
   ],
   "known_issues": [
     "User reports latest UI/theme updates did not apply: app still shows the old design; requires ensuring the full dark-gold theme pass is actually reflected across screens exactly as reference.",
-    "Admin dashboard/Admin Panel not visible for the user who expects admin access; likely missing/incorrect admin role flag on the user record or mismatched gating condition."
+    "Admin dashboard/Admin Panel not visible for the user who expects admin access; likely missing/incorrect admin role flag on the user record or mismatched gating condition.",
+    "Admin Panel still not visible after deployment; update admin bootstrap/promotion logic to target the new expected admin email `thephoenixcreativeshub@gmail.com` and ensure frontend gating checks the same admin field.",
+    "User signed in via Internet Identity using `thephoenixcreativeshub@gmail.com` but Admin Panel still did not appear; admin promotion/bootstrap is not taking effect or the UI role-gating is not updating after login.",
+    "Backend code paste appears incomplete/buggy: uses np and stats.skew/stats.kurtosis but missing imports (numpy as np, scipy.stats).",
+    "/api/simulation/monte-carlo returns self._interpret_simulation(results) but self is undefined in the FastAPI function scope (missing implementation).",
+    "Root endpoint lists /api/analytics/stats but no such route is implemented in the provided file.",
+    "Camera capture/recording: clicking the camera enable button results in 'access denied' even when the browser has camera permission enabled; needs investigation/fix in permission handling and getUserMedia invocation context."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -183,106 +193,332 @@
         "REQ-23"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-bootstrap-ui-to-support-granting-admin-to-the-user-who-provided-name-phoenix-and-email-mrtsehlapelo-gmail-com-by-calling-the-backend-bootstrap-promotion-path-and-ensure-the-ui-shows-an-english-success-message-indicating-the-admin-panel-is-now-available",
+      "title": "Update the Admin bootstrap UI to support granting admin to the user who provided name \"Phoenix\" and email \"Mrtsehlapelo@gmail.com\" by calling the backend bootstrap/promotion path, and ensure the UI shows an English success message indicating the Admin Panel is now available.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-admin-route-guard-to-use-the-corrected-backend-bootstrap-availability-signal-so-that-authenticated-non-admin-users-see-the-adminbootstrapscreen-only-when-bootstrap-is-truly-available-otherwise-they-see-the-accessdeniedscreen",
+      "title": "Update the frontend Admin route guard to use the corrected backend bootstrap-availability signal so that authenticated non-admin users see the AdminBootstrapScreen only when bootstrap is truly available; otherwise they see the AccessDeniedScreen.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-admin-bootstrap-flow-results-in-the-phoenix-account-profile-email-exactly-mrtsehlapelo-gmail-com-case-insensitive-match-becoming-admin-and-immediately-seeing-the-admin-link-admin-panel-without-a-hard-refresh",
+      "title": "Ensure the admin bootstrap flow results in the Phoenix account (profile email exactly “Mrtsehlapelo@gmail.com”, case-insensitive match) becoming admin and immediately seeing the Admin link + Admin Panel without a hard refresh.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-bootstrap-ui-to-require-and-guide-users-to-use-the-email-phoenixpredictions-gmail-com-case-insensitive-match-for-first-admin-setup-including-all-validation-checks-default-suggested-email-and-error-help-text-and-keep-all-user-facing-messages-in-english",
+      "title": "Update the Admin bootstrap UI to require and guide users to use the email `phoenixpredictions@gmail.com` (case-insensitive match) for first-admin setup, including all validation checks, default suggested email, and error/help text, and keep all user-facing messages in English.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-that-after-a-successful-bootstrap-the-admin-navigation-link-and-admin-panel-route-become-available-immediately-without-a-hard-refresh-for-the-newly-bootstrapped-admin-user",
+      "title": "Ensure that after a successful bootstrap, the Admin navigation link and Admin Panel route become available immediately (without a hard refresh) for the newly-bootstrapped admin user.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-bootstrap-ui-frontend-src-components-admin-adminbootstrapscreen-tsx-to-require-and-guide-users-to-use-the-email-thephoenixcreativeshub-gmail-com-case-insensitive-match-for-first-admin-setup-including-the-validation-logic-default-suggested-email-and-all-user-facing-help-error-success-text",
+      "title": "Update the Admin bootstrap UI (`frontend/src/components/admin/AdminBootstrapScreen.tsx`) to require and guide users to use the email `thephoenixcreativeshub@gmail.com` (case-insensitive match) for first-admin setup, including the validation logic, default suggested email, and all user-facing help/error/success text.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-frontend-updates-immediately-without-hard-refresh-to-show-the-admin-navigation-link-and-allow-access-to-the-admin-panel-right-after-the-successful-bootstrap-for-thephoenixcreativeshub-gmail-com",
+      "title": "Ensure the frontend updates immediately (without hard refresh) to show the Admin navigation link and allow access to the Admin Panel right after the successful bootstrap for `thephoenixcreativeshub@gmail.com`.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-post-login-conditional-navigation-so-that-after-a-successful-internet-identity-login-admin-users-are-automatically-redirected-to-the-admin-panel-route-admin-while-non-admin-users-land-on-the-home-route-this-must-not-require-a-hard-refresh-and-must-work-even-if-the-admin-role-is-granted-immediately-after-bootstrap",
+      "title": "Implement post-login conditional navigation so that after a successful Internet Identity login, Admin users are automatically redirected to the Admin Panel route (/admin), while non-admin users land on the Home route (/). This must not require a hard refresh and must work even if the admin role is granted immediately after bootstrap.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-bottom-tab-navigation-bar-on-mobile-that-matches-the-uploaded-blueprint-s-navigation-intent-and-labels-home-analysis-vip-results-profile-the-bottom-tabs-must-be-responsive-visible-on-small-screens-and-must-not-break-the-existing-desktop-header-navigation-the-admin-panel-must-remain-hidden-from-this-bottom-tab-bar-and-remain-role-based",
+      "title": "Add a bottom tab navigation bar on mobile that matches the uploaded blueprint’s navigation intent and labels: Home / Analysis / VIP / Results / Profile. The bottom tabs must be responsive (visible on small screens) and must not break the existing desktop header navigation. The Admin Panel must remain hidden from this bottom tab bar and remain role-based.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-analysis-landing-page-route-that-supports-the-blueprint-s-dedicated-analysis-tab-it-should-list-matches-with-available-analysis-e-g-today-s-matches-and-or-all-matches-with-analysis-and-allow-navigation-into-the-existing-per-match-match-analysis-page-match-matchid-ensure-the-home-screen-remains-the-opening-route",
+      "title": "Create an Analysis landing page/route that supports the blueprint’s dedicated \"Analysis\" tab: it should list matches with available analysis (e.g., today’s matches and/or all matches with analysis) and allow navigation into the existing per-match Match Analysis page (/match/$matchId). Ensure the Home screen remains the opening route (/).",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-expose-ai-assisted-match-metrics-in-the-ui-on-the-match-analysis-page-including-expected-goals-and-market-probability-percentages-over-under-btts-etc-and-ensure-these-are-only-shown-when-the-ai-insights-item-is-approved",
+      "title": "Expose AI-assisted match metrics in the UI on the Match Analysis page, including expected goals and market probability percentages (Over/Under, BTTS, etc.), and ensure these are only shown when the AI/insights item is approved.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-panel-workflow-to-manage-ai-assisted-predictions-create-update-ai-insights-for-a-selected-match-and-approve-publish-them-so-they-become-visible-on-user-facing-pages",
+      "title": "Add an Admin Panel workflow to manage AI-assisted predictions: create/update AI/insights for a selected match and approve/publish them so they become visible on user-facing pages.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-ai-confidence-score-badges-very-high-high-moderate-low-alongside-each-ticket-in-vip-and-tickets-pages-and-ensure-the-badge-colors-follow-the-existing-confidence-color-mapping-used-elsewhere-in-the-app",
+      "title": "Add AI confidence score badges (Very High / High / Moderate / Low) alongside each ticket in VIP and Tickets pages, and ensure the badge colors follow the existing confidence color mapping used elsewhere in the app.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enhance-odds-train-visualization-to-show-multi-day-progress-details-including-completed-legs-remaining-legs-and-estimated-payout-and-add-derived-metrics-streaks-trends-cumulative-roi-and-probability-of-success-computed-from-stored-outcomes-inputs",
+      "title": "Enhance Odds Train visualization to show multi-day progress details including completed legs, remaining legs, and estimated payout, and add derived metrics: streaks/trends, cumulative ROI, and probability of success (computed from stored outcomes/inputs).",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-analytics-dashboard-experience-within-the-existing-app-structure-admin-only-analytics-win-prediction-accuracy-by-league-and-ticket-type-vip-engagement-and-vip-user-analytics-personal-streaks-ticket-success-rate-top-performing-tickets",
+      "title": "Implement an analytics dashboard experience within the existing app structure: admin-only analytics (win %, prediction accuracy by league and ticket type, VIP engagement) and VIP-user analytics (personal streaks, ticket success rate, top performing tickets).",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-gamification-features-award-badges-for-streaks-accuracy-vip-level-and-add-a-vip-leaderboard-ranking-users-by-ticket-accuracy-ensure-badge-leaderboard-visibility-respects-vip-gating-and-admin-privacy-constraints",
+      "title": "Add gamification features: award badges for streaks/accuracy/VIP level, and add a VIP leaderboard ranking users by ticket accuracy; ensure badge/leaderboard visibility respects VIP gating and admin privacy constraints.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-shareable-streaks-as-link-based-sharing-artifacts-no-third-party-social-api-integration-generate-a-share-card-view-url-that-summarizes-the-user-s-streak-badges-in-app-and-can-be-copied-for-sharing-to-whatsapp-facebook-telegram-tiktok-manually",
+      "title": "Implement shareable streaks as link-based sharing artifacts (no third-party social API integration): generate a share card view/URL that summarizes the user’s streak/badges in-app and can be copied for sharing to WhatsApp/Facebook/Telegram/TikTok manually.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enhance-subscription-capabilities-to-support-annual-vip-subscriptions-trial-vip-access-1-day-or-1-ticket-and-subscription-expiration-alerts-while-preserving-existing-free-basic-premium-gating-rules-and-the-profile-upgrade-flow",
+      "title": "Enhance subscription capabilities to support annual VIP subscriptions, trial VIP access (1 day or 1 ticket), and subscription expiration alerts, while preserving existing Free/Basic/Premium gating rules and the Profile upgrade flow.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-in-app-notifications-feature-to-cover-new-ticket-releases-odds-train-progress-milestones-results-updates-and-subscription-expiration-warnings-ensure-notifications-are-stored-per-user-and-visible-in-the-ui",
+      "title": "Extend the existing in-app Notifications feature to cover: new ticket releases, Odds Train progress milestones, results updates, and subscription expiration warnings; ensure notifications are stored per user and visible in the UI.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-pivot-the-app-s-product-surface-from-phoenix-predictions-to-aviator-analytics-by-replacing-the-current-navigation-ia-and-routes-with-aviator-analytics-screens-dashboard-simulator-simulator-analytics-analytics-monte-carlo-monte-carlo-live-live-and-keep-profile-profile-and-admin-admin-available-but-update-their-labeling-content-to-fit-the-aviator-domain",
+      "title": "Pivot the app’s product surface from “Phoenix Predictions” to “Aviator Analytics” by replacing the current navigation IA and routes with Aviator Analytics screens: Dashboard (/), Simulator (/simulator), Analytics (/analytics), Monte Carlo (/monte-carlo), Live (/live), and keep Profile (/profile) and Admin (/admin) available but update their labeling/content to fit the Aviator domain.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-fastapi-websocket-ws-live-requirement-with-an-internet-computer-compatible-live-feed-model-implement-backend-storage-for-recent-simulated-games-and-a-live-polling-api-that-supports-1-initial-fetch-last-n-games-and-2-incremental-updates-since-a-cursor-timestamp-the-frontend-must-provide-a-live-page-that-polls-on-an-interval-to-emulate-the-provided-websocket-behavior",
+      "title": "Replace the FastAPI WebSocket “/ws/live” requirement with an Internet Computer-compatible live feed model: implement backend storage for recent simulated games and a ‘live polling’ API that supports (1) initial fetch (last N games) and (2) incremental updates since a cursor/timestamp. The frontend must provide a Live page that polls on an interval to emulate the provided WebSocket behavior.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-new-aviator-analytics-frontend-pages-and-components-to-consume-the-new-backend-methods-1-dashboard-with-kpi-cards-and-a-recent-multipliers-mini-chart-2-simulator-page-that-generates-n-games-and-renders-a-table-and-chart-3-analytics-page-that-runs-pattern-stats-distribution-on-selected-history-4-monte-carlo-page-with-input-controls-and-results-visualization-5-live-page-with-auto-updating-feed-and-rolling-stats",
+      "title": "Create new Aviator Analytics frontend pages and components to consume the new backend methods: (1) Dashboard with KPI cards and a recent multipliers mini-chart, (2) Simulator page that generates N games and renders a table and chart, (3) Analytics page that runs pattern+stats+distribution on selected history, (4) Monte Carlo page with input controls and results visualization, (5) Live page with auto-updating feed and rolling stats.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-aviator-analytics-visual-theme-distinct-from-the-current-phoenix-dark-gold-and-apply-it-consistently-across-the-new-aviator-pages-while-keeping-tailwind-shadcn-conventions-use-a-dark-cockpit-background-neon-lime-accent-and-high-contrast-typography-suitable-for-analytics-dashboards-update-user-facing-brand-strings-to-aviator-analytics",
+      "title": "Implement an Aviator Analytics visual theme (distinct from the current Phoenix dark/gold) and apply it consistently across the new Aviator pages, while keeping Tailwind/Shadcn conventions: use a dark “cockpit” background, neon-lime accent, and high-contrast typography suitable for analytics dashboards. Update user-facing brand strings to “Aviator Analytics”.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-brand-assets-for-aviator-analytics-and-render-them-from-frontend-static-files-an-app-logo-and-a-subtle-dark-cockpit-grid-background-texture",
+      "title": "Add generated static brand assets for Aviator Analytics and render them from frontend static files: an app logo and a subtle dark cockpit/grid background texture.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-camera-capture-and-recording-panel-on-the-live-feed-page-that-can-record-real-aviator-gameplay-as-a-video-source-for-later-analytics-the-panel-must-support-1-requesting-camera-permission-2-showing-a-live-preview-3-starting-stopping-a-recording-4-showing-recording-status-elapsed-time-and-5-making-the-recorded-clip-playable-and-downloadable-locally-in-the-browser-all-user-facing-text-must-be-in-english",
+      "title": "Add a camera capture and recording panel on the Live Feed page that can record real Aviator gameplay as a video source for later analytics. The panel must support: (1) requesting camera permission, (2) showing a live preview, (3) starting/stopping a recording, (4) showing recording status + elapsed time, and (5) making the recorded clip playable and downloadable locally in the browser. All user-facing text must be in English.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-capture-mode-selector-on-the-live-feed-page-so-users-can-explicitly-choose-between-the-existing-polling-based-simulated-live-feed-and-the-camera-recording-mode-the-default-must-remain-the-existing-polling-based-live-feed-behavior",
+      "title": "Add a “capture mode” selector on the Live Feed page so users can explicitly choose between the existing polling-based simulated live feed and the camera recording mode. The default must remain the existing polling-based live feed behavior.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-live-page-camera-enable-flow-so-that-clicking-enable-camera-successfully-starts-a-camera-preview-when-the-browser-site-permission-is-allowed-and-does-not-incorrectly-show-access-denied-update-the-camera-start-logic-used-by-frontend-src-components-live-cameracapturerecordercard-tsx-via-startcamera-from-camera-usecamera-to-handle-common-browser-permission-constraint-edge-cases-and-provide-a-working-fallback",
+      "title": "Fix the Live page camera enable flow so that clicking “Enable Camera” successfully starts a camera preview when the browser/site permission is allowed, and does not incorrectly show “access denied”. Update the camera start logic used by `frontend/src/components/live/CameraCaptureRecorderCard.tsx` (via `startCamera` from `@/camera/useCamera`) to handle common browser permission/constraint edge-cases and provide a working fallback.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-camera-error-diagnostics-in-frontend-src-components-live-cameracapturerecordercard-tsx-so-the-displayed-error-matches-the-real-failure-reason-permission-denied-vs-no-device-vs-constraint-failure-and-ensure-all-user-facing-text-is-in-english",
+      "title": "Improve camera error diagnostics in `frontend/src/components/live/CameraCaptureRecorderCard.tsx` so the displayed error matches the real failure reason (permission denied vs no device vs constraint failure), and ensure all user-facing text is in English.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enable-opening-the-live-page-directly-in-camera-recording-mode-when-the-user-requests-open-live-camera-by-supporting-a-url-deep-link-that-selects-the-live-page-s-camera-recording-tab-on-first-render",
+      "title": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-in-app-ui-affordance-to-open-the-camera-recording-view-from-within-the-live-page-without-manual-tab-switching-e-g-a-button-or-link-labeled-in-english",
+      "title": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "Create FlutterFlow app project \"Phoenix Predictions\" with responsive (mobile+desktop) dark analyst theme (black/gold), specified fonts, and dashboard/analytics layout styling",
+      "id": "AR-38",
+      "summary": "Build Aviator Analytics FastAPI backend with CORS enabled and a root (/) discovery endpoint listing available routes",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Configure Firebase/Firestore collections and fields: Users, Matches, Analysis, Tickets, Results, and optional Notifications as specified",
+      "id": "AR-39",
+      "summary": "Implement /api/game/simulate endpoint to generate N simulated games using AdvancedGameSimulator with previous multiplier context",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-3",
-      "summary": "Implement navigation and pages in required order: Home → Match Analysis → VIP → Tickets → Results → Profile → Admin Panel",
+      "id": "AR-40",
+      "summary": "Implement /api/analytics/patterns endpoint to compute ML pattern analysis (AviatorPatternModel) plus descriptive stats and multiplier distribution buckets",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-4",
-      "summary": "Home screen: show Today’s Matches with Confidence Level; link to Match Analysis and VIP; connect to Matches + Analysis",
+      "id": "AR-41",
+      "summary": "Implement /api/simulation/monte-carlo endpoint to run Monte Carlo simulation with strategy + parameters and return interpreted results",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-5",
-      "summary": "Match Analysis page: display Form, Head-to-Head, Goal Stats, Tactical Insight, Confidence badge; VIP-only section unlocks ticket+odds; connect to Matches + Analysis",
+      "id": "AR-42",
+      "summary": "Implement /ws/live WebSocket endpoint to stream initial game history then periodic new simulated games with rolling analytics/pattern results",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-6",
-      "summary": "VIP section: Safe Builder (3 odds), Value Accumulator (5 odds), Odds Train (20–25 matches multi-day); connect to Tickets + Matches + Analysis; include Odds Train progress bar",
+      "id": "AR-43",
+      "summary": "Add Postgres persistence via SQLAlchemy models for GameRecord and AnalysisResult, plus DB session management and migrations/initialization",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-7",
-      "summary": "Results dashboard: show win rate %, last 30 days performance, wins/losses, streaks; connect to Results + Tickets",
+      "id": "AR-44",
+      "summary": "Integrate ML modules (AviatorPatternModel, AnomalyDetector) into analytics pipeline and define clear input/output JSON contracts",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-8",
-      "summary": "Profile page: display user info and subscription status; upgrade button triggers payment gateways (PayFast + Flutterwave) to update subscription_type",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Subscription/VIP gating: enforce visibility/access based on subscription_type (Free / Basic VIP / Premium VIP) and conditional visibility for tickets/odds",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Admin Panel (role-based/hidden): add match, add analysis, build ticket, update results, track accuracy; write to Matches/Analysis/Tickets/Results",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Notifications system for ticket releases, results, and updates (Firestore-backed; optional collection)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Confidence badge color mapping: Very High=Gold, High=Green, Moderate=Orange, Low=Red",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Phase 2 enhancements (optional): AI assistant (ChatGPT API) for analysis/market suggestions, probability scoring display for markets, and push notifications",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Create backend data models and persistent storage (in the Motoko single-actor canister) equivalent to the requested Firestore collections and fields: Users{name:string,email:string,subscription_type:Free|Basic|Premium,join_date:timestamp}; Matches{match_id:auto,league:string,teams:string,kickoff_date:timestamp}; Analysis{match_id:reference,form:array,head_to_head:array,goal_stats:object,tactical_insight:string,confidence_level:Very High|High|Moderate|Low}; Tickets{ticket_type:Safe|Value|Train,odds:float,selections:array of match_ids,status:Pending|Win|Loss}; Results{ticket_id:reference,result:Win|Loss,date_completed:timestamp,ROI:float}; Notifications(optional){user_id:reference,message:string,type:info|alert,sent_at:timestamp}.",
+      "id": "AR-46",
+      "summary": "Implement Aviator game simulation in the Motoko single-actor backend: define a Game record (multiplier, duration, timestamp, optional flight_curve) and expose a method equivalent to GET /api/game/simulate that generates N simulated games using prior multipliers as context (matching the provided FastAPI intent using `AdvancedGameSimulator.generate_game(previous_games)`).",
       "reqIds": [
-        "REQ-2"
+        "REQ-52"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-17",
-      "summary": "Align backend role APIs with frontend expectations by ensuring there is a backend method to return the caller’s role (admin vs non-admin/guest) that matches the frontend’s `useCurrentUser()` usage (currently calling `getCallerUserRole()`).",
+      "id": "AR-47",
+      "summary": "Implement analytics computation in the Motoko backend equivalent to POST /api/analytics/patterns: accept a list of games (or multipliers) and return (1) pattern analysis output, (2) descriptive statistics (mean, median, std dev, min, max, quartiles), and (3) multiplier distribution buckets (under_1x, 1x_to_2x, 2x_to_5x, 5x_to_10x, 10x_plus). Define a clear JSON-like Candid return shape that the frontend can render directly.",
       "reqIds": [
-        "REQ-22"
+        "REQ-53"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Implement a Monte Carlo simulation method in the Motoko backend equivalent to POST /api/simulation/monte-carlo that accepts: n_simulations, strategy, initial_balance, bet_amount, and returns (a) the simulation parameters echoed back, (b) summarized results (e.g., ending balance distribution / average return / probability of ruin), and (c) an interpretation string field (replacing the undefined `self._interpret_simulation(results)` in the provided FastAPI snippet).",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Implement an Aviator Analytics “discovery/root” API equivalent to GET / that returns the app name/version and a list of available backend methods (mirroring the provided FastAPI root discovery endpoint).",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Add real-time camera capture/recording for the Live feed so the system can record the live Aviator game and use it as the source for real-time updates and analytics (video ingestion + extraction pipeline requirements TBD).",
+      "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Phoenix Predictions",
+  "projectName": "Aviator Analytics",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

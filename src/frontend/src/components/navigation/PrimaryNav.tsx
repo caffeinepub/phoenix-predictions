@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Home, Crown, Ticket, TrendingUp, User, Shield } from 'lucide-react';
+import { LayoutDashboard, Zap, BarChart3, Radio, User, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
@@ -14,10 +14,10 @@ export default function PrimaryNav({ mobile = false, onNavigate }: PrimaryNavPro
   const { isAdmin } = useCurrentUser();
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/vip', label: 'VIP', icon: Crown },
-    { path: '/tickets', label: 'Tickets', icon: Ticket },
-    { path: '/results', label: 'Results', icon: TrendingUp },
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/simulator', label: 'Simulator', icon: Zap },
+    { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { path: '/live', label: 'Live', icon: Radio },
     { path: '/profile', label: 'Profile', icon: User },
   ];
 
@@ -67,7 +67,7 @@ export default function PrimaryNav({ mobile = false, onNavigate }: PrimaryNavPro
             className={cn(
               'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all',
               isActive
-                ? 'bg-primary/20 text-primary border-2 border-primary/50 shadow-gold-glow'
+                ? 'bg-primary/20 text-primary border-2 border-primary/50 shadow-aviator-glow'
                 : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground border-2 border-transparent'
             )}
           >

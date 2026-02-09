@@ -1,76 +1,46 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T15:06:58.420Z",
+  "generatedAt": "2026-02-09T07:20:43.347Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-21",
-        "summary": "Ensure the currently authenticated user can be granted the Admin role so that the Admin Panel becomes visible and accessible (role-based/hidden admin gating). Provide a safe bootstrap path to make the user an admin when there are no admins yet, or an admin-only promotion path otherwise.",
+        "id": "REQ-64",
+        "summary": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/admin/AdminRoute.tsx",
-          "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/hooks/useCurrentUser.ts",
-          "frontend/src/components/navigation/PrimaryNav.tsx"
+          "frontend/src/pages/LivePage.tsx",
+          "frontend/src/utils/urlParams.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/admin/AdminRoute.tsx",
-          "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/hooks/useCurrentUser.ts"
+          "frontend/src/pages/LivePage.tsx"
         ]
       },
       {
-        "id": "REQ-22",
-        "summary": "Align backend role APIs with frontend expectations by ensuring there is a backend method to return the caller’s role (admin vs non-admin/guest) that matches the frontend’s `useCurrentUser()` usage (currently calling `getCallerUserRole()`).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-23",
-        "summary": "Implement Admin Panel capabilities for 'Update Results' and 'Track Accuracy' end-to-end so that admin actions write/read Results data in the backend and are usable from the Admin Panel UI.",
+        "id": "REQ-65",
+        "summary": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/ResultsPage.tsx"
+          "frontend/src/pages/LivePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/pages/ResultsPage.tsx"
+          "frontend/src/pages/LivePage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/admin/AdminBootstrapScreen.tsx",
-    "frontend/src/components/admin/AdminRoute.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useCurrentUser.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/ResultsPage.tsx",
+    "frontend/src/pages/LivePage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

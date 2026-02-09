@@ -1,90 +1,58 @@
 {
   "kind": "build_request",
-  "title": "Grant admin access to current user and complete Admin Panel actions (Results + Accuracy)",
-  "priority": "high",
+  "title": "Add deep link to open the Live Camera recording view",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-21",
-      "text": "Ensure the currently authenticated user can be granted the Admin role so that the Admin Panel becomes visible and accessible (role-based/hidden admin gating). Provide a safe bootstrap path to make the user an admin when there are no admins yet, or an admin-only promotion path otherwise.",
-      "target": "both",
+      "id": "REQ-64",
+      "text": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-7"
         ],
         "quotes": [
-          "My account should have admin.Admin Panel (Hidden / Role-based): Add Match, Add Analysis, Build Ticket, Update Results, Track Accuracy; writes to Matches, Analysis, Tickets, Results"
+          "Open love camera"
         ]
       },
       "acceptanceCriteria": [
-        "When a user is admin, the PrimaryNav shows the 'Admin' link and '/admin' renders the Admin Panel instead of AccessDeniedScreen.",
-        "When a user is not admin, the 'Admin' link is not shown and navigating to '/admin' shows AccessDeniedScreen.",
-        "A newly deployed canister with zero admins supports a one-time bootstrap flow that allows the first authenticated user to become admin (subsequent users cannot use the bootstrap flow once an admin exists).",
-        "If an admin already exists, only an existing admin can promote another principal to admin.",
-        "The frontend refreshes the cached current user role after the admin role is granted (Admin link appears without requiring a hard reload)."
+        "Navigating to the Live page with a query parameter (e.g. /live?mode=camera) opens the Live page with the 'Camera Recording' tab selected.",
+        "Navigating to /live with no query parameter continues to default to the existing 'Simulated Live Feed' tab.",
+        "Switching tabs in the UI keeps working as it does now and does not break the simulated polling pause/refetch behavior.",
+        "All user-facing text related to this behavior is in English."
       ]
     },
     {
-      "id": "REQ-22",
-      "text": "Align backend role APIs with frontend expectations by ensuring there is a backend method to return the caller’s role (admin vs non-admin/guest) that matches the frontend’s `useCurrentUser()` usage (currently calling `getCallerUserRole()`).",
-      "target": "backend",
+      "id": "REQ-65",
+      "text": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-7"
         ],
         "quotes": [
-          "My account should have admin."
+          "Open love camera"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a `getCallerUserRole()` (or updates the frontend to use the actual existing role API) so that the app can reliably compute `isAdmin`.",
-        "For authenticated non-admin users, the returned role is non-admin; for admins it is admin.",
-        "No unauthorized traps occur when an authenticated user calls the role endpoint (it should be callable for signed-in users)."
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Implement Admin Panel capabilities for 'Update Results' and 'Track Accuracy' end-to-end so that admin actions write/read Results data in the backend and are usable from the Admin Panel UI.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Admin Panel (Hidden / Role-based): Add Match, Add Analysis, Build Ticket, Update Results, Track Accuracy; writes to Matches, Analysis, Tickets, Results"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend has a Results data structure stored in-canister and admin-only mutation(s) to record/update a ticket’s result (e.g., win/loss) and completion time, keyed by ticket id.",
-        "Non-admin callers cannot create/update results and receive an authorization failure.",
-        "Frontend Admin Panel includes a usable UI to set a ticket result (Win/Loss) for an existing ticket and submit it successfully.",
-        "Frontend Admin Panel includes a 'Track Accuracy' view that shows accuracy metrics computed from stored results (at minimum: total decided tickets, wins, losses, win rate %).",
-        "Admin Panel success/error toasts are shown in English for results updates and accuracy actions.",
-        "ResultsPage continues to function; if it relies on results data, it must read from the backend Results source (or remain consistent with stored results) rather than requiring manual client-only assumptions."
+        "Live page includes a clearly labeled control (English text) that switches the Live page into 'Camera Recording' mode when clicked.",
+        "The control does not start the camera automatically; it only switches to the camera tab so the user can click 'Enable Camera'.",
+        "The existing bottom tab navigation and desktop navigation remain unchanged and continue to route to /live."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/immutablePaths (compose existing UI components instead).",
-    "All user-facing text must be in English."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Do not add WebSockets or external services; keep behavior fully in-browser and within the existing React/TanStack Router structure.",
+    "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding real-time updates via websockets/push notifications for admin changes.",
-    "Redesigning the global theme/styling beyond what is required to expose and use the Admin Panel functions."
+    "Implementing a server-side video ingestion, upload, or analytics pipeline for recorded camera footage.",
+    "Changing backend APIs or adding new backend storage for recordings.",
+    "Automatically starting camera capture without an explicit user click on 'Enable Camera'."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
