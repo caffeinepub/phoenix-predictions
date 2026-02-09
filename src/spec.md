@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Allow users to open the Live page directly in the “Camera Recording” view via a deep link, and provide an in-app control to switch to that view without manual tab switching.
+**Goal:** Fix the frontend build/deployment failure and restore the Live page camera capture/recording experience.
 
 **Planned changes:**
-- Support a query parameter on the Live route (e.g., `/live?mode=camera`) that selects the “Camera Recording” tab on first render.
-- Keep `/live` (no query parameter) defaulting to the existing “Simulated Live Feed” tab.
-- Add a clearly labeled in-page control on the Live page that switches the UI to the “Camera Recording” tab without starting the camera.
-- Ensure existing tab switching behavior remains intact, including the simulated polling pause/refetch behavior, and keep navigation routing to `/live` unchanged.
+- Resolve the missing `@/camera/useCamera` import by adding the `useCamera` hook/module (or updating the import to an existing module) so the Live page renders the Camera Recording tab.
+- Implement `useCamera` start/stop behavior: request camera permissions via `navigator.mediaDevices.getUserMedia`, attach the stream to the provided `videoRef`, stop tracks on disable, and surface user-friendly errors for common failures.
+- Fix TypeScript DOM typing issues in `useMediaRecorder` (e.g., avoid `NodeJS.Timeout` for browser timers) to ensure strict type-checking and successful builds while preserving recording functionality.
 
-**User-visible outcome:** Users can navigate directly to the Live page in Camera Recording mode using a URL like `/live?mode=camera`, or click an in-page control to switch to “Camera Recording” without automatically enabling the camera.
+**User-visible outcome:** The app builds and deploys successfully; users can open the Live page, switch to the Camera Recording tab, enable a working camera preview, stop the camera cleanly, and start/stop recording to produce a playable local recording URL with clear English error messages when camera access fails.

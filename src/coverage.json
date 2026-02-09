@@ -1,36 +1,43 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T07:20:43.347Z",
+  "generatedAt": "2026-02-09T13:21:29.752Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-64",
-        "summary": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
-        "status": "implemented",
+        "id": "REQ-1",
+        "summary": "Fix the frontend build error preventing deployment by resolving the missing import used by the camera recording UI (the hook imported as `@/camera/useCamera`). Add the missing `useCamera` hook/module (or update the import to a real existing module) so the app compiles and the Live page can render the Camera Recording tab.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/pages/LivePage.tsx",
-          "frontend/src/utils/urlParams.ts"
+          "frontend/src/camera/useCamera.ts"
         ],
-        "matchedFiles": [
-          "frontend/src/pages/LivePage.tsx"
-        ]
+        "matchedFiles": []
       },
       {
-        "id": "REQ-65",
-        "summary": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
+        "id": "REQ-2",
+        "summary": "Implement camera start/stop behavior in the `useCamera` hook so that clicking \"Enable Camera\" requests permissions via `navigator.mediaDevices.getUserMedia`, attaches the stream to the provided `videoRef`, and surfaces user-friendly errors for common failures (permission denied, no camera device found, not supported).",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/camera/useCamera.ts",
+          "frontend/src/components/live/CameraCaptureRecorderCard.tsx"
+        ],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Fix any TypeScript DOM typing issues in `useMediaRecorder` that can break the frontend build in a browser-only React project (e.g., avoid using `NodeJS.Timeout` for `setInterval` in the browser) so the hook type-checks cleanly.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LivePage.tsx"
+          "frontend/src/hooks/useMediaRecorder.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LivePage.tsx"
+          "frontend/src/hooks/useMediaRecorder.ts"
         ]
       }
     ]
@@ -40,7 +47,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/pages/LivePage.tsx",
+    "frontend/src/hooks/useMediaRecorder.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

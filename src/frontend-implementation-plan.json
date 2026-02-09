@@ -1,43 +1,59 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Deep link + in-app control for Live Camera Recording tab",
+  "title": "Fix frontend build and restore Live camera capture/recording",
   "requirements": [
     {
-      "id": "REQ-64",
-      "summary": "Support a query param deep link that opens the Live page with the Camera Recording tab selected on first render.",
+      "id": "REQ-1",
+      "summary": "Resolve missing camera hook import so the frontend compiles and the Live \"Camera Recording\" tab renders.",
       "acceptanceCriteria": [
-        "Navigating to the Live page with a query parameter (e.g. /live?mode=camera) opens the Live page with the 'Camera Recording' tab selected.",
-        "Navigating to /live with no query parameter continues to default to the existing 'Simulated Live Feed' tab.",
-        "Switching tabs in the UI keeps working as it does now and does not break the simulated polling pause/refetch behavior.",
-        "All user-facing text related to this behavior is in English."
+        "`frontend/src/components/live/CameraCaptureRecorderCard.tsx` no longer imports a non-existent module path.",
+        "Frontend builds successfully with no TypeScript module-resolution errors related to `@/camera/useCamera`.",
+        "Navigating to the Live page and switching to the \"Camera Recording\" tab renders without a blank screen or runtime crash."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LivePage.tsx",
-          "operation": "modify",
-          "description": "Initialize the Live page tab state from a URL query parameter (mode=camera) on first render while preserving the existing default ('simulated') when the parameter is absent/invalid; ensure tab switching continues to drive captureMode and that simulated polling remains paused whenever captureMode is 'camera'. This wiring must keep all user-facing text in English. Note: the camera experience relies on the existing CameraCaptureRecorderCard which uses the selected 'camera' component's useCamera hook—verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/urlParams.ts",
-          "operation": "modify",
-          "description": "Add (or extend) a small, non-breaking utility helper to read a specific query parameter value in a way compatible with the app’s routing patterns (regular search and hash search), so LivePage can reliably interpret mode=camera without duplicating parsing logic."
+          "path": "frontend/src/camera/useCamera.ts",
+          "operation": "create",
+          "description": "Add a `useCamera` hook module at the path expected by `@/camera/useCamera` to eliminate the missing-import build failure. Implement it to be API-compatible with the selected \"camera\" component hook contract (capability: web-camera preview + control). Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-65",
-      "summary": "Add an in-page control on Live that switches directly into Camera Recording mode without manual tab selection and without starting the camera.",
+      "id": "REQ-2",
+      "summary": "Implement camera start/stop behavior and friendly camera errors in `useCamera` for the Live recording UI.",
       "acceptanceCriteria": [
-        "Live page includes a clearly labeled control (English text) that switches the Live page into 'Camera Recording' mode when clicked.",
-        "The control does not start the camera automatically; it only switches to the camera tab so the user can click 'Enable Camera'.",
-        "The existing bottom tab navigation and desktop navigation remain unchanged and continue to route to /live."
+        "On a supported browser, clicking \"Enable Camera\" shows a live preview in the `<video>` element.",
+        "If permission is denied, the UI shows the existing English message: \"Camera permission denied. Please allow camera access to continue.\"",
+        "If no camera is available, the UI shows the existing English message: \"No camera found. Please connect a camera device.\"",
+        "Clicking \"Stop Camera\" stops all MediaStream tracks and the preview stops."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LivePage.tsx",
+          "path": "frontend/src/camera/useCamera.ts",
           "operation": "modify",
-          "description": "Add a clearly labeled in-page UI control (e.g., a Button labeled \"Open live camera\") that sets captureMode to 'camera' when clicked, without invoking any camera-start logic; ensure it does not alter existing navigation components (PrimaryNav/BottomTabNav) and keeps all user-facing text in English. Note: the camera tab uses CameraCaptureRecorderCard which relies on the selected 'camera' component—verify the component's usage instructions before implementing."
+          "description": "Implement `startCamera`/`stopCamera` using `navigator.mediaDevices.getUserMedia`, attach the acquired MediaStream to `videoRef.current.srcObject`, and manage `isActive`/`isLoading` state. Surface structured errors (`permission`, `not-found`, `not-supported`, etc.) so the existing Live UI maps them to the required English messages. Ensure stop logic stops all stream tracks and clears `srcObject`. Use the selected \"camera\" component contract as the reference for types/shape (capability: camera preview + control). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/live/CameraCaptureRecorderCard.tsx",
+          "operation": "modify",
+          "description": "Align the camera recording UI with the implemented `useCamera` behavior: ensure the preview always has non-zero dimensions, buttons are disabled while camera is initializing/stopping, and error rendering continues to show the required English permission/not-found messages based on `cameraError.type`."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Fix browser TypeScript DOM typing issues in `useMediaRecorder` so it type-checks cleanly and recording remains functional.",
+      "acceptanceCriteria": [
+        "`frontend/src/hooks/useMediaRecorder.ts` type-checks without relying on `NodeJS` timer types.",
+        "Frontend builds successfully with strict TypeScript settings used by the project.",
+        "Recording start/stop still works and produces a playable `recordedUrl` in the camera recording UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useMediaRecorder.ts",
+          "operation": "modify",
+          "description": "Replace `NodeJS.Timeout` usage with browser-safe timer typing (e.g., `ReturnType<typeof setInterval>` or `number`) and adjust any interval/clearInterval calls accordingly. Keep recording lifecycle intact so start/stop still produces a playable `recordedUrl` in the Live camera recording UI."
         }
       ]
     }

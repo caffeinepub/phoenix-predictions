@@ -1,55 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Add deep link to open the Live Camera recording view",
+  "title": "Fix build/deployment failure and restore Live camera capture/recording",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-64",
-      "text": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
+      "id": "REQ-1",
+      "text": "Fix the frontend build error preventing deployment by resolving the missing import used by the camera recording UI (the hook imported as `@/camera/useCamera`). Add the missing `useCamera` hook/module (or update the import to a real existing module) so the app compiles and the Live page can render the Camera Recording tab.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-3",
+          "msg-4"
         ],
         "quotes": [
-          "Open love camera"
+          "Open live camera",
+          "Fix"
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to the Live page with a query parameter (e.g. /live?mode=camera) opens the Live page with the 'Camera Recording' tab selected.",
-        "Navigating to /live with no query parameter continues to default to the existing 'Simulated Live Feed' tab.",
-        "Switching tabs in the UI keeps working as it does now and does not break the simulated polling pause/refetch behavior.",
-        "All user-facing text related to this behavior is in English."
+        "`frontend/src/components/live/CameraCaptureRecorderCard.tsx` no longer imports a non-existent module path.",
+        "Frontend builds successfully with no TypeScript module-resolution errors related to `@/camera/useCamera`.",
+        "Navigating to the Live page and switching to the \"Camera Recording\" tab renders without a blank screen or runtime crash."
       ]
     },
     {
-      "id": "REQ-65",
-      "text": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
+      "id": "REQ-2",
+      "text": "Implement camera start/stop behavior in the `useCamera` hook so that clicking \"Enable Camera\" requests permissions via `navigator.mediaDevices.getUserMedia`, attaches the stream to the provided `videoRef`, and surfaces user-friendly errors for common failures (permission denied, no camera device found, not supported).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-3",
+          "msg-4"
         ],
         "quotes": [
-          "Open love camera"
+          "Open live camera",
+          "Fix"
         ]
       },
       "acceptanceCriteria": [
-        "Live page includes a clearly labeled control (English text) that switches the Live page into 'Camera Recording' mode when clicked.",
-        "The control does not start the camera automatically; it only switches to the camera tab so the user can click 'Enable Camera'.",
-        "The existing bottom tab navigation and desktop navigation remain unchanged and continue to route to /live."
+        "On a supported browser, clicking \"Enable Camera\" shows a live preview in the `<video>` element.",
+        "If permission is denied, the UI shows the existing English message: \"Camera permission denied. Please allow camera access to continue.\"",
+        "If no camera is available, the UI shows the existing English message: \"No camera found. Please connect a camera device.\"",
+        "Clicking \"Stop Camera\" stops all MediaStream tracks and the preview stops."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Fix any TypeScript DOM typing issues in `useMediaRecorder` that can break the frontend build in a browser-only React project (e.g., avoid using `NodeJS.Timeout` for `setInterval` in the browser) so the hook type-checks cleanly.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Fix"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`frontend/src/hooks/useMediaRecorder.ts` type-checks without relying on `NodeJS` timer types.",
+        "Frontend builds successfully with strict TypeScript settings used by the project.",
+        "Recording start/stop still works and produces a playable `recordedUrl` in the camera recording UI."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Do not add WebSockets or external services; keep behavior fully in-browser and within the existing React/TanStack Router structure.",
+    "Do not edit any files under `frontend/src/hooks/useInternetIdentity.ts` / `.tsx`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, or anything in `frontend/src/components/ui` (immutable paths).",
     "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "Implementing a server-side video ingestion, upload, or analytics pipeline for recorded camera footage.",
-    "Changing backend APIs or adding new backend storage for recordings.",
-    "Automatically starting camera capture without an explicit user click on 'Enable Camera'."
+    "Do not add backend APIs for uploading/storing video recordings; recordings remain local in the browser as described on the Live page.",
+    "Do not implement real-time streaming, WebSockets, or server-side video processing."
   ],
   "imageRequirements": {
     "required": [],

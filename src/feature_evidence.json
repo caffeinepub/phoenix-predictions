@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-enable-opening-the-live-page-directly-in-camera-recording-mode-when-the-user-requests-open-live-camera-by-supporting-a-url-deep-link-that-selects-the-live-page-s-camera-recording-tab-on-first-render",
-      "featureTitle": "Enable opening the Live page directly in Camera Recording mode when the user requests “Open live camera”, by supporting a URL/deep-link that selects the Live page’s Camera Recording tab on first render.",
+      "featureId": "feature-fix-any-typescript-dom-typing-issues-in-usemediarecorder-that-can-break-the-frontend-build-in-a-browser-only-react-project-e-g-avoid-using-nodejs-timeout-for-setinterval-in-the-browser-so-the-hook-type-checks-cleanly",
+      "featureTitle": "Fix any TypeScript DOM typing issues in `useMediaRecorder` that can break the frontend build in a browser-only React project (e.g., avoid using `NodeJS.Timeout` for `setInterval` in the browser) so the hook type-checks cleanly.",
       "files": [
-        "frontend/src/pages/LivePage.tsx"
+        "frontend/src/hooks/useMediaRecorder.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,27 +17,7 @@
         "camera@1.0.0"
       ],
       "testIds": [
-        "REQ-64"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-an-in-app-ui-affordance-to-open-the-camera-recording-view-from-within-the-live-page-without-manual-tab-switching-e-g-a-button-or-link-labeled-in-english",
-      "featureTitle": "Add an in-app UI affordance to open the camera recording view from within the Live page without manual tab switching (e.g., a button or link labeled in English).",
-      "files": [
-        "frontend/src/pages/LivePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "camera@1.0.0"
-      ],
-      "testIds": [
-        "REQ-65"
+        "REQ-3"
       ],
       "confidence": "high"
     }
